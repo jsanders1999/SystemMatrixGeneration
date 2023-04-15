@@ -54,19 +54,19 @@ void get_block_parameters(int nx, int ny, int nz, MPI_Comm comm, int *nbx, int *
 	*izb = zb_start;
 
 	//Save idx's of our neighbours
-	int left   = bx_idx > 0            ? rank - 1                   : MPI_PROC_NULL;
-	int right  = bx_idx < blocks_x - 1 ? rank + 1                   : MPI_PROC_NULL;
-	int bottom = by_idx > 0            ? rank - blocks_x            : MPI_PROC_NULL;
-	int top    = by_idx < blocks_y - 1 ? rank + blocks_x            : MPI_PROC_NULL;
-	int back   = bz_idx > 0            ? rank - blocks_x * blocks_y : MPI_PROC_NULL;
-	int front  = bz_idx < blocks_z - 1 ? rank + blocks_x * blocks_y : MPI_PROC_NULL;
+	int west   = bx_idx > 0            ? rank - 1                   : MPI_PROC_NULL;
+	int east  = bx_idx < blocks_x - 1 ? rank + 1                   : MPI_PROC_NULL;
+	int northtom = by_idx > 0            ? rank - blocks_x            : MPI_PROC_NULL;
+	int south    = by_idx < blocks_y - 1 ? rank + blocks_x            : MPI_PROC_NULL;
+	int bot   = bz_idx > 0            ? rank - blocks_x * blocks_y : MPI_PROC_NULL;
+	int top  = bz_idx < blocks_z - 1 ? rank + blocks_x * blocks_y : MPI_PROC_NULL;
 	
-	neighbours[0] = left;
-	neighbours[1] = right;
-	neighbours[2] = bottom;
-	neighbours[3] = top;
-	neighbours[4] = back;
-	neighbours[5] = front;
+	neighbours[0] = west;
+	neighbours[1] = east;
+	neighbours[2] = northtom;
+	neighbours[3] = south;
+	neighbours[4] = bot;
+	neighbours[5] = top;
 }
 
 double dot(long n, double const* x, double const* y, MPI_Comm comm) {
@@ -125,37 +125,37 @@ void apply_stencil3d(stencil3d const* S, double const* u, double* v, MPI_Comm co
 
 	printf("block parameters: %d, %d, %d, start ids: %d, %d, %d\n", bx_sz, by_sz, bz_sz, bx_start, by_start, bz_start);
 	/*
-	double* send_left_buffer  = (double*) malloc(by_sz * bz_sz * sizeof(double));
-	double* recv_left_buffer  = (double*) malloc(by_sz * bz_sz * sizeof(double));
-	double* send_right_buffer = (double*) malloc(by_sz * bz_sz * sizeof(double));
-	double* recv_right_buffer = (double*) malloc(by_sz * bz_sz * sizeof(double));
+	double* send_west_buffer  = (double*) malloc(by_sz * bz_sz * sizeof(double));
+	double* recv_west_buffer  = (double*) malloc(by_sz * bz_sz * sizeof(double));
+	double* send_east_buffer = (double*) malloc(by_sz * bz_sz * sizeof(double));
+	double* recv_east_buffer = (double*) malloc(by_sz * bz_sz * sizeof(double));
 	
-	double* send_top_buffer   = (double*) malloc(bx_sz * bz_sz * sizeof(double));
-	double* recv_top_buffer   = (double*) malloc(bx_sz * bz_sz * sizeof(double));
-	double* send_bot_buffer   = (double*) malloc(bx_sz * bz_sz * sizeof(double));
-	double* recv_bot_buffer   = (double*) malloc(bx_sz * bz_sz * sizeof(double));
+	double* send_south_buffer   = (double*) malloc(bx_sz * bz_sz * sizeof(double));
+	double* recv_south_buffer   = (double*) malloc(bx_sz * bz_sz * sizeof(double));
+	double* send_north_buffer   = (double*) malloc(bx_sz * bz_sz * sizeof(double));
+	double* recv_north_buffer   = (double*) malloc(bx_sz * bz_sz * sizeof(double));
 	
-	double* send_back_buffer  = (double*) malloc(bx_sz * by_sz * sizeof(double));
-	double* recv_back_buffer  = (double*) malloc(bx_sz * by_sz * sizeof(double));
-	double* send_front_buffer = (double*) malloc(bx_sz * by_sz * sizeof(double));
-	double* recv_front_buffer = (double*) malloc(bx_sz * by_sz * sizeof(double));
+	double* send_bot_buffer  = (double*) malloc(bx_sz * by_sz * sizeof(double));
+	double* recv_bot_buffer  = (double*) malloc(bx_sz * by_sz * sizeof(double));
+	double* send_top_buffer = (double*) malloc(bx_sz * by_sz * sizeof(double));
+	double* recv_top_buffer = (double*) malloc(bx_sz * by_sz * sizeof(double));
 	*/
-	double send_left_buffer[by_sz*bz_sz];//TODO will these fit on the stack for our grid sizes? 
-	double recv_left_buffer[by_sz*bz_sz]; 
-	double send_right_buffer[by_sz*bz_sz];  
-	double recv_right_buffer[by_sz*bz_sz];  
+	double send_west_buffer[by_sz*bz_sz];//TODO will these fit on the stack for our grid sizes? 
+	double recv_west_buffer[by_sz*bz_sz]; 
+	double send_east_buffer[by_sz*bz_sz];  
+	double recv_east_buffer[by_sz*bz_sz];  
 	
-	double send_top_buffer[bx_sz*bz_sz];    
-	double recv_top_buffer[bx_sz*bz_sz];    
-	double send_bot_buffer[bx_sz*bz_sz];    
-	double recv_bot_buffer[bx_sz*bz_sz];    
+	double send_south_buffer[bx_sz*bz_sz];    
+	double recv_south_buffer[bx_sz*bz_sz];    
+	double send_north_buffer[bx_sz*bz_sz];    
+	double recv_north_buffer[bx_sz*bz_sz];    
 	
-	double send_back_buffer[bx_sz*by_sz];   
-	double recv_back_buffer[bx_sz*by_sz];  
-	double send_front_buffer[bx_sz*by_sz]; 
-	double recv_front_buffer[bx_sz*by_sz]; 
+	double send_bot_buffer[bx_sz*by_sz];   
+	double recv_bot_buffer[bx_sz*by_sz];  
+	double send_top_buffer[bx_sz*by_sz]; 
+	double recv_top_buffer[bx_sz*by_sz]; 
 	
-	//If we have neighbour in a direction, we communicate the bdry points both ways, otherwise we set the recv_buffer to zero.
+	//If we have neighbour in a direction, we communicate the bdry points northh ways, otherwise we set the recv_buffer to zero.
 	//TODO loop ordering should be changed.
 	MPI_Request requests[12];
 	MPI_Status statuses[12];
@@ -164,150 +164,113 @@ void apply_stencil3d(stencil3d const* S, double const* u, double* v, MPI_Comm co
 		printf("%d ", neighbours[id]);
 	printf("\n");
 
-	//Left
-	
+	//west
 	if (neighbours[0] != MPI_PROC_NULL) {
 		int id = 0;
 		for (int iy = 0; iy < by_sz; iy++) {
 			for (int iz = 0; iz < bz_sz; iz++, id++) {
-				//printf("id left: %d %d %d\n", bx_start, by_start+iy, bz_start+iz);
-				send_left_buffer[id] = v[S->index_c(bx_start+0, by_start+iy, bz_start+iz)];
+				send_west_buffer[id] = v[S->index_c(bx_start+0, by_start+iy, bz_start+iz)];
 			}
 		}
-		//MPI_Isend(send_left_buffer, by_sz * bz_sz, MPI_DOUBLE, neighbours[0], 0, comm, &requests[0]);
-		//MPI_Irecv(recv_left_buffer, by_sz * bz_sz, MPI_DOUBLE, neighbours[0], 0, comm, &requests[1]);
-		MPI_Sendrecv(send_left_buffer, by_sz*by_sz, MPI_DOUBLE, neighbours[0], 7, recv_left_buffer, by_sz*bz_sz, MPI_DOUBLE, neighbours[1], 7, comm, &statuses[0]);
+		MPI_Isend(send_west_buffer, by_sz * bz_sz, MPI_DOUBLE, neighbours[0], 0, comm, &requests[0]);
+		MPI_Irecv(recv_west_buffer, by_sz * bz_sz, MPI_DOUBLE, neighbours[0], 1, comm, &requests[1]);
 	} else {
 		 for (int id=0; id<by_sz*bz_sz; id++) {
-			 recv_left_buffer[id]=0.0;
+			 recv_west_buffer[id]=0.0;
 		 }
 	}
-	//Right
+	//east
 	if (neighbours[1] != MPI_PROC_NULL) {
 		int id = 0;
 		for (int iy = 0; iy < by_sz; iy++) {
 			for (int iz = 0; iz < bz_sz; iz++, id++) {
-				//printf("id right: %d %d %d\n", bx_start+bx_sz-1, by_start+iy, bz_start+iz);
-				send_right_buffer[id] = v[S->index_c(bx_start+bz_sz-1, iy+by_start, bz_start+iz)];
+				send_east_buffer[id] = v[S->index_c(bx_start+bz_sz-1, iy+by_start, bz_start+iz)];
 			}
 		}
-		//MPI_Isend(send_right_buffer, by_sz * bz_sz, MPI_DOUBLE, neighbours[1], 0, comm, &requests[2]);
-		//MPI_Irecv(recv_right_buffer, by_sz * bz_sz, MPI_DOUBLE, neighbours[1], 0, comm, &requests[3]);
-		MPI_Sendrecv(send_right_buffer, by_sz*by_sz, MPI_DOUBLE, neighbours[1], 7, recv_right_buffer, by_sz*bz_sz, MPI_DOUBLE, neighbours[0], 7, comm, &statuses[1]);
+		MPI_Isend(send_east_buffer, by_sz * bz_sz, MPI_DOUBLE, neighbours[1], 1, comm, &requests[2]);
+		MPI_Irecv(recv_east_buffer, by_sz * bz_sz, MPI_DOUBLE, neighbours[1], 0, comm, &requests[3]);
 	} else {
 		 for (int id=0; id<by_sz*bz_sz; id++) {
-			 recv_right_buffer[id]=0.0;
+			 recv_east_buffer[id]=0.0;
 		 }
 	}
-	//MPI_Wait(&requests[1], &statuses[1]);
-	/*
-	//Bottom
+	//north
 	if (neighbours[2] != MPI_PROC_NULL) {
+		int id = 0;
 		for (int ix = 0; ix < bx_sz; ix++) {
-			for (int iz = 0; iz < bz_sz; iz++) {
-				send_bot_buffer[S->index_c(bx_start+ix, by_start+0, bz_start+iz)] = v[S->index_c(bx_start+ix, by_start+0, bz_start+iz)];
+			for (int iz = 0; iz < bz_sz; iz++, id++) {
+				send_north_buffer[id] = v[S->index_c(bx_start+ix, by_start+0, bz_start+iz)];
 			}
 		}
-		MPI_Isend(send_bot_buffer, bx_sz * by_sz, MPI_DOUBLE, neighbours[2], 0, comm, &requests[4]);
-		MPI_Irecv(recv_bot_buffer, bx_sz * by_sz, MPI_DOUBLE, neighbours[2], 0, comm, &requests[5]);
+		MPI_Isend(send_north_buffer, bx_sz * bz_sz, MPI_DOUBLE, neighbours[2], 0, comm, &requests[4]);
+		MPI_Irecv(recv_north_buffer, bx_sz * bz_sz, MPI_DOUBLE, neighbours[2], 1, comm, &requests[5]);
 	} else {
 		for (int id=0; id<bx_sz*bz_sz; id++) {
-			 recv_bot_buffer[id]=0.0;
+			 recv_north_buffer[id]=0.0;
 		}
 	}
-
-	//Top
+	//south
 	if (neighbours[3] != MPI_PROC_NULL) {
+		int id = 0;
 		for (int ix = 0; ix < bx_sz; ix++) {
-			for (int iz = 0; iz < bz_sz; iz++) {
-				send_top_buffer[S->index_c(bx_start+ix, by_start+by_sz-1, bz_start+iz)] = v[S->index_c(bx_start+ix, by_start+by_sz-1, bz_start+iz)];
+			for (int iz = 0; iz < bz_sz; iz++, id++) {
+				send_south_buffer[id] = v[S->index_c(bx_start+ix, by_start+by_sz-1, bz_start+iz)];
 			}
 		}
-		MPI_Isend(send_top_buffer, bx_sz * by_sz, MPI_DOUBLE, neighbours[3], 0, comm, &requests[6]);
-		MPI_Irecv(recv_top_buffer, bx_sz * by_sz, MPI_DOUBLE, neighbours[3], 0, comm, &requests[7]);
+		MPI_Isend(send_south_buffer, bx_sz * bz_sz, MPI_DOUBLE, neighbours[3], 1, comm, &requests[6]);
+		MPI_Irecv(recv_south_buffer, bx_sz * bz_sz, MPI_DOUBLE, neighbours[3], 0, comm, &requests[7]);
 	} else {
 		 for (int id=0; id<bx_sz*bz_sz; id++) {
+			 recv_south_buffer[id]=0.0;
+		 }
+	}
+	//bot
+	if (neighbours[4] != MPI_PROC_NULL) {
+		int id = 0;
+		for (int iy = 0; iy < by_sz; iy++) {
+			for (int ix = 0; ix < bx_sz; ix++, id++) {
+				send_bot_buffer[id] = v[S->index_c(bx_start+ix, iy+by_start, bz_start+0)];
+			}
+		}
+		MPI_Isend(send_bot_buffer, bx_sz * by_sz, MPI_DOUBLE, neighbours[4], 0, comm, &requests[8]);
+		MPI_Irecv(recv_bot_buffer, bx_sz * by_sz, MPI_DOUBLE, neighbours[4], 1, comm, &requests[9]);
+	} else {
+		 for (int id=0; id<by_sz*bx_sz; id++) {
+			 recv_bot_buffer[id]=0.0;
+		 }
+	}
+	//top
+	if (neighbours[5] != MPI_PROC_NULL) {
+		int id = 0;
+		for (int iy = 0; iy < by_sz; iy++) {
+			for (int ix = 0; ix < bx_sz; ix++, id++) {
+				send_top_buffer[id] = v[S->index_c(bx_start+ix, iy+by_start, bz_start+bz_sz-1)];
+			}
+		}
+		MPI_Isend(send_top_buffer, bx_sz * by_sz, MPI_DOUBLE, neighbours[5], 1, comm, &requests[10]);
+		MPI_Irecv(recv_top_buffer, bx_sz * by_sz, MPI_DOUBLE, neighbours[5], 0, comm, &requests[11]);
+	} else {
+		 for (int id=0; id<by_sz*bx_sz; id++) {
 			 recv_top_buffer[id]=0.0;
 		 }
 	}
-
-	//Back
-	if (neighbours[4] != MPI_PROC_NULL) {
-		for (int iy = 0; iy < by_sz; iy++) {
-			for (int ix = 0; ix < bx_sz; ix++) {
-				send_back_buffer[S->index_c(bx_start+ix, by_start+iy, bz_start+0)] = v[S->index_c(bx_start+ix, iy+by_start, bz_start+0)];
-			}
-		}
-		MPI_Isend(send_back_buffer, bx_sz * by_sz, MPI_DOUBLE, neighbours[4], 0, comm, &requests[8]);
-		MPI_Irecv(recv_back_buffer, bx_sz * by_sz, MPI_DOUBLE, neighbours[4], 0, comm, &requests[9]);
-	} else {
-		 for (int id=0; id<by_sz*bx_sz; id++) {
-			 recv_back_buffer[id]=0.0;
-		 }
-	}
-
-	//Front
-	if (neighbours[5] != MPI_PROC_NULL) {
-		for (int iy = 0; iy < by_sz; iy++) {
-			for (int ix = 0; ix < bx_sz; ix++) {
-				send_front_buffer[S->index_c(bx_start+ix, by_start+iy, bz_start+bz_sz-1)] = v[S->index_c(bx_start+ix, iy+by_start, bz_start+bz_sz-1)];
-			}
-		}
-		MPI_Isend(send_front_buffer, bx_sz * by_sz, MPI_DOUBLE, neighbours[5], 0, comm, &requests[10]);
-		MPI_Irecv(recv_front_buffer, bx_sz * by_sz, MPI_DOUBLE, neighbours[5], 0, comm, &requests[11]);
-	} else {
-		 for (int id=0; id<by_sz*bx_sz; id++) {
-			 recv_front_buffer[id]=0.0;
-		 }
-	}
-	*/
 	
-	
-	/*
-	//TODO The case where no neighbour exists needs to be handled in some way here.
-	//When we have our response, treat the 6 border cases separately. 
-	MPI_Wait(&requests[1], &statuses[1]);
-	//TODO left case
-	MPI_Wait(&requests[3], &statuses[3]);
-	//TODO right case
-	MPI_Wait(&requests[5], &statuses[5]);
-	//TODO top case
-	MPI_Wait(&requests[7], &statuses[7]);
-	//TODO bottom case
-	MPI_Wait(&requests[9], &statuses[9]);
-	//TODO back case
-	MPI_Wait(&requests[11], &statuses[11]);
-	//TODO front case
-	*/
 	//For the interior of the block, perform the operations as usual.
 	for (int iz=bz_start+1; iz<bz_start+bz_sz-1; iz++) {
 		for (int iy=by_start+1; iy<by_start+by_sz-1; iy++) {
 			for (int ix=bx_start+1; ix<bx_start+bx_sz-1; ix++) {
-				v[S->index_c(ix, iy, iz)] = S->value_c * u[S->index_c(ix, iy, iz)]
-				+ S->value_b * u[S->index_b(ix, iy, iz)]
-				+ S->value_t * u[S->index_t(ix, iy, iz)]
-				+ S->value_s * u[S->index_s(ix, iy, iz)]
-				+ S->value_n * u[S->index_n(ix, iy, iz)]
-				+ S->value_w * u[S->index_w(ix, iy, iz)]
-				+ S->value_e * u[S->index_e(ix, iy, iz)];
-				printf("ix=%d, iy=%d, iz=%d\n", ix, iy, iz);
+				double accum = S->value_c * u[S->index_c(ix, iy, iz)];
+				accum += S->value_b * u[S->index_b(ix, iy, iz)]
+				accum += S->value_t * u[S->index_t(ix, iy, iz)]
+				accum += S->value_s * u[S->index_s(ix, iy, iz)]
+				accum += S->value_n * u[S->index_n(ix, iy, iz)]
+				accum += S->value_w * u[S->index_w(ix, iy, iz)]
+				accum += S->value_e * u[S->index_e(ix, iy, iz)];
+				//printf("ix=%d, iy=%d, iz=%d\n", ix, iy, iz);
+				v[S->index_c(ix, iy, iz)] = accum;
 			}
 		}
 	}
-	/*
-	free(send_left_buffer);
-	free(recv_left_buffer);
-	free(send_right_buffer);
-	free(recv_right_buffer);
-	free(send_top_buffer);
-	free(recv_top_buffer); 
-	free(send_bot_buffer);
-	free(recv_bot_buffer);
-	free(send_back_buffer);
-	free(recv_back_buffer);
-	free(send_front_buffer);
-	free(recv_front_buffer);
-	*/
 	return;
 }
 
@@ -342,9 +305,9 @@ int main(int argc, char* argv[]) {
 	MPI_Comm comm = MPI_COMM_WORLD;
 	MPI_Comm_rank(comm, &rank);
 	
-	int nx = 5;
-	int ny = 5;
-	int nz = 5;
+	int nx = 35;
+	int ny = 35;
+	int nz = 35;
 	double u[nx*ny*nz]={5.0, 5.0, 5.0};
 	double v[nx*ny*nz]={1.0, 0.0, 2.0};
 	stencil3d L = laplace3d_stencil(nx, ny, nz);
