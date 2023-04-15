@@ -54,17 +54,17 @@ void get_block_parameters(int nx, int ny, int nz, MPI_Comm comm, int *nbx, int *
 	*izb = zb_start;
 
 	//Save idx's of our neighbours
-	int west   = bx_idx > 0            ? rank - 1                   : MPI_PROC_NULL;
+	int west  = bx_idx > 0            ? rank - 1                   : MPI_PROC_NULL;
 	int east  = bx_idx < blocks_x - 1 ? rank + 1                   : MPI_PROC_NULL;
-	int northtom = by_idx > 0            ? rank - blocks_x            : MPI_PROC_NULL;
-	int south    = by_idx < blocks_y - 1 ? rank + blocks_x            : MPI_PROC_NULL;
+	int south = by_idx > 0            ? rank - blocks_x            : MPI_PROC_NULL;
+	int north = by_idx < blocks_y - 1 ? rank + blocks_x            : MPI_PROC_NULL;
 	int bot   = bz_idx > 0            ? rank - blocks_x * blocks_y : MPI_PROC_NULL;
-	int top  = bz_idx < blocks_z - 1 ? rank + blocks_x * blocks_y : MPI_PROC_NULL;
+	int top   = bz_idx < blocks_z - 1 ? rank + blocks_x * blocks_y : MPI_PROC_NULL;
 	
 	neighbours[0] = west;
 	neighbours[1] = east;
-	neighbours[2] = northtom;
-	neighbours[3] = south;
+	neighbours[2] = south;
+	neighbours[3] = north;
 	neighbours[4] = bot;
 	neighbours[5] = top;
 }
@@ -140,29 +140,25 @@ void apply_stencil3d(stencil3d const* S, double const* u, double* v, MPI_Comm co
 	double* send_top_buffer = (double*) malloc(bx_sz * by_sz * sizeof(double));
 	double* recv_top_buffer = (double*) malloc(bx_sz * by_sz * sizeof(double));
 	*/
-	double send_west_buffer[by_sz*bz_sz];//TODO will these fit on the stack for our grid sizes? 
-	double recv_west_buffer[by_sz*bz_sz]; 
-	double send_east_buffer[by_sz*bz_sz];  
-	double recv_east_buffer[by_sz*bz_sz];  
+	double send_west_buffer[by_sz*bz_sz] = {0.0};//TODO will these fit on the stack for our grid sizes? 
+	double recv_west_buffer[by_sz*bz_sz] = {0.0}; 
+	double send_east_buffer[by_sz*bz_sz] = {0.0};  
+	double recv_east_buffer[by_sz*bz_sz] = {0.0};  
 	
-	double send_south_buffer[bx_sz*bz_sz];    
-	double recv_south_buffer[bx_sz*bz_sz];    
-	double send_north_buffer[bx_sz*bz_sz];    
-	double recv_north_buffer[bx_sz*bz_sz];    
+	double send_south_buffer[bx_sz*bz_sz] = {0.0};    
+	double recv_south_buffer[bx_sz*bz_sz] = {0.0};    
+	double send_north_buffer[bx_sz*bz_sz] = {0.0};    
+	double recv_north_buffer[bx_sz*bz_sz] = {0.0};    
 	
-	double send_bot_buffer[bx_sz*by_sz];   
-	double recv_bot_buffer[bx_sz*by_sz];  
-	double send_top_buffer[bx_sz*by_sz]; 
-	double recv_top_buffer[bx_sz*by_sz]; 
+	double send_bot_buffer[bx_sz*by_sz] = {0.0};   
+	double recv_bot_buffer[bx_sz*by_sz] = {0.0};  
+	double send_top_buffer[bx_sz*by_sz] = {0.0}; 
+	double recv_top_buffer[bx_sz*by_sz] = {0.0}; 
 	
 	//If we have neighbour in a direction, we communicate the bdry points northh ways, otherwise we set the recv_buffer to zero.
 	//TODO loop ordering should be changed.
 	MPI_Request requests[12];
 	MPI_Status statuses[12];
-
-	for (int id=0; id<6; id++)
-		printf("%d ", neighbours[id]);
-	printf("\n");
 
 	//west
 	if (neighbours[0] != MPI_PROC_NULL) {
@@ -194,34 +190,34 @@ void apply_stencil3d(stencil3d const* S, double const* u, double* v, MPI_Comm co
 			 recv_east_buffer[id]=0.0;
 		 }
 	}
-	//north
+	//south
 	if (neighbours[2] != MPI_PROC_NULL) {
 		int id = 0;
 		for (int ix = 0; ix < bx_sz; ix++) {
 			for (int iz = 0; iz < bz_sz; iz++, id++) {
-				send_north_buffer[id] = v[S->index_c(bx_start+ix, by_start+0, bz_start+iz)];
+				send_south_buffer[id] = v[S->index_c(bx_start+ix, by_start+0, bz_start+iz)];
 			}
 		}
-		MPI_Isend(send_north_buffer, bx_sz * bz_sz, MPI_DOUBLE, neighbours[2], 0, comm, &requests[4]);
-		MPI_Irecv(recv_north_buffer, bx_sz * bz_sz, MPI_DOUBLE, neighbours[2], 1, comm, &requests[5]);
+		MPI_Isend(send_south_buffer, bx_sz * bz_sz, MPI_DOUBLE, neighbours[2], 0, comm, &requests[4]);
+		MPI_Irecv(recv_south_buffer, bx_sz * bz_sz, MPI_DOUBLE, neighbours[2], 1, comm, &requests[5]);
 	} else {
 		for (int id=0; id<bx_sz*bz_sz; id++) {
-			 recv_north_buffer[id]=0.0;
+			 recv_south_buffer[id]=0.0;
 		}
 	}
-	//south
+	//north
 	if (neighbours[3] != MPI_PROC_NULL) {
 		int id = 0;
 		for (int ix = 0; ix < bx_sz; ix++) {
 			for (int iz = 0; iz < bz_sz; iz++, id++) {
-				send_south_buffer[id] = v[S->index_c(bx_start+ix, by_start+by_sz-1, bz_start+iz)];
+				send_north_buffer[id] = v[S->index_c(bx_start+ix, by_start+by_sz-1, bz_start+iz)];
 			}
 		}
-		MPI_Isend(send_south_buffer, bx_sz * bz_sz, MPI_DOUBLE, neighbours[3], 1, comm, &requests[6]);
-		MPI_Irecv(recv_south_buffer, bx_sz * bz_sz, MPI_DOUBLE, neighbours[3], 0, comm, &requests[7]);
+		MPI_Isend(send_north_buffer, bx_sz * bz_sz, MPI_DOUBLE, neighbours[3], 1, comm, &requests[6]);
+		MPI_Irecv(recv_north_buffer, bx_sz * bz_sz, MPI_DOUBLE, neighbours[3], 0, comm, &requests[7]);
 	} else {
 		 for (int id=0; id<bx_sz*bz_sz; id++) {
-			 recv_south_buffer[id]=0.0;
+			 recv_north_buffer[id]=0.0;
 		 }
 	}
 	//bot
@@ -256,17 +252,23 @@ void apply_stencil3d(stencil3d const* S, double const* u, double* v, MPI_Comm co
 	}
 	
 	//For the interior of the block, perform the operations as usual.
-	for (int iz=bz_start+1; iz<bz_start+bz_sz-1; iz++) {
-		for (int iy=by_start+1; iy<by_start+by_sz-1; iy++) {
-			for (int ix=bx_start+1; ix<bx_start+bx_sz-1; ix++) {
-				double accum = S->value_c * u[S->index_c(ix, iy, iz)];
-				accum += S->value_b * u[S->index_b(ix, iy, iz)]
-				accum += S->value_t * u[S->index_t(ix, iy, iz)]
-				accum += S->value_s * u[S->index_s(ix, iy, iz)]
-				accum += S->value_n * u[S->index_n(ix, iy, iz)]
-				accum += S->value_w * u[S->index_w(ix, iy, iz)]
-				accum += S->value_e * u[S->index_e(ix, iy, iz)];
+	for (int iz=bz_start; iz<bz_start+bz_sz; iz++) {
+		for (int iy=by_start; iy<by_start+by_sz; iy++) {
+			for (int ix=bx_start; ix<bx_start+bx_sz; ix++) {
+				int ew_id = by_sz*iz+iy; 
+				int ns_id = bx_sz*ix+iz; 
+				int tb_id = by_sz*iy+ix; 
+				double accum = S->value_c * u[S->index_c(ix, iy, iz)]; //TODO make branchless
+				accum += S->value_b * ((iz==bz_start        ) ? recv_bot_buffer[tb_id]   : u[S->index_b(ix, iy, iz)]);
+				accum += S->value_t * ((iz==bz_start+bz_sz-1) ? recv_top_buffer[tb_id]   : u[S->index_t(ix, iy, iz)]);
+				accum += S->value_s * ((iy==by_start        ) ? recv_south_buffer[ns_id] : u[S->index_s(ix, iy, iz)]);
+				accum += S->value_n * ((iy==by_start+by_sz-1) ? recv_north_buffer[ns_id] : u[S->index_n(ix, iy, iz)]);
+				accum += S->value_w * ((ix==bx_start        ) ? recv_west_buffer[ew_id]  : u[S->index_w(ix, iy, iz)]);
+				accum += S->value_e * ((ix==bx_start+bx_sz-1) ? recv_east_buffer[ew_id]  : u[S->index_e(ix, iy, iz)]);
 				//printf("ix=%d, iy=%d, iz=%d\n", ix, iy, iz);
+				//if (iz==bz_start)
+				//	printf("%.1f ", recv_bot_buffer[tb_id]);
+				//	printf("%.1f ", recv_west_buffer[tb_id]);
 				v[S->index_c(ix, iy, iz)] = accum;
 			}
 		}
@@ -275,8 +277,7 @@ void apply_stencil3d(stencil3d const* S, double const* u, double* v, MPI_Comm co
 }
 
 ///Test the 
-stencil3d laplace3d_stencil(int nx, int ny, int nz)
-{
+stencil3d laplace3d_stencil(int nx, int ny, int nz){
 	if (nx<=2 || ny<=2 || nz<=2) throw std::runtime_error("need at least two grid points in each direction to implement boundary conditions.");
 	stencil3d L;
 	L.nx=nx; L.ny=ny; L.nz=nz;
@@ -305,13 +306,14 @@ int main(int argc, char* argv[]) {
 	MPI_Comm comm = MPI_COMM_WORLD;
 	MPI_Comm_rank(comm, &rank);
 	
-	int nx = 35;
-	int ny = 35;
-	int nz = 35;
+	int nx = 10;
+	int ny = 10;
+	int nz = 10;
 	double u[nx*ny*nz]={5.0, 5.0, 5.0};
 	double v[nx*ny*nz]={1.0, 0.0, 2.0};
 	stencil3d L = laplace3d_stencil(nx, ny, nz);
 	apply_stencil3d(&L, u, v, comm);
+	print_array(v, 5);
 	double dot_res = dot(nx*ny*nz, u, v, comm);
 	if (rank==0)
 		printf("Dot result %f\n", dot_res);
