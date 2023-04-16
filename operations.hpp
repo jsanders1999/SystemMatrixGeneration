@@ -2,16 +2,19 @@
 
 #include <sstream>
 #include <stdexcept>
+#include <mpi.h>
 
 //////////////////////////////////
 // Vector operations            //
 //////////////////////////////////
+// handle the 3d blocking used for the stencil operations
+void get_block_parameters(int nx, int ny, int nz, MPI_Comm comm, int *nbx, int *nby, int *nbz, int *ixb, int *iyb, int *izb, int* neighbours);
 
 // initialize a vector with a constant value, x[i] = value for 0<=i<n
 void init(long n, double* x, double value);
 
 // scalar product: return sum_i x[i]*y[i] for 0<=i<n
-double dot(long n, double const* x, double const* y);
+double dot(long n, double const* x, double const* y, MPI_Comm comm);
 
 // vector update: compute y[i] = a*x[i] + b*y[i] for 0<=i<n
 void axpby(long n, double a, double const* x, double b, double* y);
@@ -77,6 +80,5 @@ typedef struct stencil3d
 
 
 //! apply a 7-point stencil to a vector, v = op*x
-void apply_stencil3d(stencil3d const* op, double const* u, double* v);
-void apply_stencil3d_bench(stencil3d const* op, double const* u, double* v, int bszy);
+void apply_stencil3d(stencil3d const* op, double const* u, double* v, MPI_Comm comm);
 

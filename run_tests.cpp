@@ -9,8 +9,8 @@ int main(int argc, char **argv) {
 
     testing::InitGoogleTest(&argc, argv);
 
-    int rank = 0;
-    int num_procs = 1;
+    int rank;
+    int num_procs;
 
 #ifdef USE_MPI
     MPI_Init(&argc, &argv);
@@ -28,39 +28,7 @@ int main(int argc, char **argv) {
         ::testing::UnitTest::GetInstance()->listeners().Release(defaultXMLListener);
         delete defaultXMLListener;
     }
-
-    // run tests with 1, 2, and 8 processes
-    for (int num_procs_iter : {1, 2, 8}) {
-        if (num_procs_iter <= num_procs) {
-            MPI_Comm comm;
-            MPI_Comm_split(MPI_COMM_WORLD, rank < num_procs_iter, rank, &comm);
-
-            if (MPI_COMM_NULL != comm) {
-                MPI_Comm_rank(comm, &rank);
-
-                if (rank == 0) {
-                    std::cout << "Running tests with " << num_procs_iter << " processes..." << std::endl;
-                }
-
-                if (num_procs_iter > 1) {
-                    ::testing::TestEventListeners& listeners = ::testing::UnitTest::GetInstance()->listeners();
-                    delete listeners.Release(listeners.default_result_printer());
-                    listeners.Append(new ::testing::TestEventListenerMPI(comm));
-                }
-
-                test_result = RUN_ALL_TESTS();
-
-                if (num_procs_iter > 1) {
-                    ::testing::TestEventListeners& listeners = ::testing::UnitTest::GetInstance()->listeners();
-                    delete listeners.Release(listeners.default_result_printer());
-                    listeners.Append(new ::testing::TestEventListenerMPI(MPI_COMM_WORLD));
-                }
-
-                MPI_Comm_free(&comm);
-            }
-        }
-    }
-
+	test_result = RUN_ALL_TESTS();
 #ifdef USE_MPI
     MPI_Finalize();
 #endif

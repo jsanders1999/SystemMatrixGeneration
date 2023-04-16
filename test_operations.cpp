@@ -13,6 +13,7 @@ TEST(DotTest, DotProductIsCorrect) {
 	}
 	MPI_Comm comm = MPI_COMM_WORLD;
 	MPI_Comm_rank(comm, &rank);
+	printf("Rank: %d\n", rank);
 	double dot_product = dot(n, x, y, comm);
 
 	if (rank == 0) {

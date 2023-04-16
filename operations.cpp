@@ -272,7 +272,7 @@ void apply_stencil3d(stencil3d const* S, double const* u, double* v, MPI_Comm co
 	}
 	return;
 }
-
+/*
 stencil3d laplace3d_stencil(int nx, int ny, int nz){
 	if (nx<=2 || ny<=2 || nz<=2) throw std::runtime_error("need at least two grid points in each direction to implement boundary conditions.");
 	stencil3d L;
@@ -316,4 +316,4 @@ int main(int argc, char* argv[]) {
 	
 	MPI_Finalize();
 	return 0;
-}
+}*/
