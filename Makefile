@@ -3,7 +3,7 @@
 #module load openmpi
 
 CXX = mpic++
-CXXFLAGS = -O2 -g -lm -lgtest -lstdc++
+CXXFLAGS = -O2 -g -lm -lstdc++
 
 SRCS = operations.cpp
 EXEC = operations.x
@@ -20,7 +20,7 @@ $(EXEC): $(SRCS)
 	$(CXX) $(CXXFLAGS) $(SRCS) -o $(EXEC)
 
 run_tests.x: run_tests.cpp ${TEST_SRCS} gtest_mpi.o operations.o
-	${CXX} ${CXXFLAGS} $(TEST_SRCS) -o run_tests.x $^
+	$(CXX) $(CXXFLAGS) $^ -DUSE_MPI -o $@
 
 test: run_tests.x
 	./run_tests.x
@@ -30,3 +30,4 @@ $(TEST_EXEC): $(SRCS) $(TEST_SRCS)
 
 clean:
 	rm -f $(EXEC) $(TEST_EXEC)
+ 					
