@@ -4,41 +4,65 @@
 
 #include "gtest_mpi.hpp"
 
-GTEST_API_ int main(int argc, char **argv) {
+int main(int argc, char **argv) {
     int test_result = 0;
 
     testing::InitGoogleTest(&argc, argv);
 
-    int num_processes[] = {1, 2, 8}; // number of processes to test with
-    int num_processes_size = sizeof(num_processes)/sizeof(num_processes[0]);
+    int rank = 0;
+    int num_procs = 1;
 
 #ifdef USE_MPI
-	MPI_Init(&argc, &argv);
-    for (int i = 0; i < num_processes_size; i++) {
-        int rank = 0;
-        MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
+#endif
 
-        if (rank != 0) {
-            // on MPI ranks != 0 remove the default output listeners if there are any
-            ::testing::TestEventListener* defaultListener = ::testing::UnitTest::GetInstance()->listeners().default_result_printer();
-            ::testing::UnitTest::GetInstance()->listeners().Release(defaultListener);
-            delete defaultListener;
+    // on MPI ranks != 0 remove the default output listeners if there are any
+    if (rank != 0) {
+        ::testing::TestEventListener* defaultListener = ::testing::UnitTest::GetInstance()->listeners().default_result_printer();
+        ::testing::UnitTest::GetInstance()->listeners().Release(defaultListener);
+        delete defaultListener;
 
-            ::testing::TestEventListener* defaultXMLListener = ::testing::UnitTest::GetInstance()->listeners().default_xml_generator();
-            ::testing::UnitTest::GetInstance()->listeners().Release(defaultXMLListener);
-            delete defaultXMLListener;
-        }
-
-        // set the number of MPI processes for the test
-        int mpi_size = num_processes[i];
-        MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
-        //::testing::TestEnvironment::GetInstance()->SetMPIWorldComm(MPI_COMM_WORLD, mpi_size);
-
-        // run the tests
-        test_result = RUN_ALL_TESTS();
+        ::testing::TestEventListener* defaultXMLListener = ::testing::UnitTest::GetInstance()->listeners().default_xml_generator();
+        ::testing::UnitTest::GetInstance()->listeners().Release(defaultXMLListener);
+        delete defaultXMLListener;
     }
-	// finalize MPI
-	MPI_Finalize();
+
+    // run tests with 1, 2, and 8 processes
+    for (int num_procs_iter : {1, 2, 8}) {
+        if (num_procs_iter <= num_procs) {
+            MPI_Comm comm;
+            MPI_Comm_split(MPI_COMM_WORLD, rank < num_procs_iter, rank, &comm);
+
+            if (MPI_COMM_NULL != comm) {
+                MPI_Comm_rank(comm, &rank);
+
+                if (rank == 0) {
+                    std::cout << "Running tests with " << num_procs_iter << " processes..." << std::endl;
+                }
+
+                if (num_procs_iter > 1) {
+                    ::testing::TestEventListeners& listeners = ::testing::UnitTest::GetInstance()->listeners();
+                    delete listeners.Release(listeners.default_result_printer());
+                    listeners.Append(new ::testing::TestEventListenerMPI(comm));
+                }
+
+                test_result = RUN_ALL_TESTS();
+
+                if (num_procs_iter > 1) {
+                    ::testing::TestEventListeners& listeners = ::testing::UnitTest::GetInstance()->listeners();
+                    delete listeners.Release(listeners.default_result_printer());
+                    listeners.Append(new ::testing::TestEventListenerMPI(MPI_COMM_WORLD));
+                }
+
+                MPI_Comm_free(&comm);
+            }
+        }
+    }
+
+#ifdef USE_MPI
+    MPI_Finalize();
 #endif
 
     return test_result;
