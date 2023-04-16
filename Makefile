@@ -1,22 +1,32 @@
+# first:
+#module load 2022r2
+#module load openmpi
+
 CXX = mpic++
 CXXFLAGS = -O2 -g -lm -lstdc++
 
 SRCS = operations.cpp
 EXEC = operations.x
 
-TEST_SRCS = operations_test.cpp
-TEST_EXEC = operations_test.x
+operations.o: operations.hpp
+gtest_mpi.o: gtest_mpi.hpp
+
+TEST_SRCS = test_operations.cpp
+TEST_EXEC = test_operations.x
 
 all: $(EXEC)
 
 $(EXEC): $(SRCS)
 	$(CXX) $(CXXFLAGS) $(SRCS) -o $(EXEC)
 
-test: $(TEST_EXEC)
-	./$(TEST_EXEC)
+run_tests.x: run_tests.cpp ${TEST_SRCS} gtest_mpi.o operations.o
+	${CXX} ${CXXFLAGS} $(TEST_SRCS) -o run_tests.x $^
+
+test: run_tests.x
+	./run_tests.x
 
 $(TEST_EXEC): $(SRCS) $(TEST_SRCS)
-	$(CXX) $(CXXFLAGS) $(SRCS) $(TEST_SRCS) -o $(TEST_EXEC) -lgtest -lgtest_main -lpthread
+	$(CXX) $(CXXFLAGS) $(SRCS) $(TEST_SRCS) -o $(TEST_EXEC)
 
 clean:
 	rm -f $(EXEC) $(TEST_EXEC)
