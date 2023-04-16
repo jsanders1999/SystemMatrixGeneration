@@ -4,25 +4,6 @@
 #include <stdexcept>
 #include <mpi.h>
 
-//////////////////////////////////
-// Vector operations            //
-//////////////////////////////////
-// handle the 3d blocking used for the stencil operations
-void get_block_parameters(int nx, int ny, int nz, MPI_Comm comm, int *nbx, int *nby, int *nbz, int *ixb, int *iyb, int *izb, int* neighbours);
-
-// initialize a vector with a constant value, x[i] = value for 0<=i<n
-void init(long n, double* x, double value);
-
-// scalar product: return sum_i x[i]*y[i] for 0<=i<n
-double dot(long n, double const* x, double const* y, MPI_Comm comm);
-
-// vector update: compute y[i] = a*x[i] + b*y[i] for 0<=i<n
-void axpby(long n, double a, double const* x, double b, double* y);
-
-//////////////////////////////////
-// Linear operator application  //
-//////////////////////////////////
-
 // struct to represent a 3D 7-point stencil:
 //
 //          T  N
@@ -78,7 +59,40 @@ typedef struct stencil3d
 
 } stencil3d;
 
+typedef struct block_params
+{
+  //number of blocks in x, y and z directions
+  int bkx, bky, bkz;
+  //index in x, y and z direction of this block
+  int bx_idx, by_idx, bz_idx;
+  // grid dimensions
+  int bx_sz, by_sz, bz_sz;
+  // neighbour ranks
+  int rank_e, rank_w, rank_n, rank_s, rank_b, rank_t;
+} block_params;
 
-//! apply a 7-point stencil to a vector, v = op*x
-void apply_stencil3d(stencil3d const* op, double const* u, double* v, MPI_Comm comm);
+//////////////////////////////////
+// Linear operator application  //
+//////////////////////////////////
+
+// apply a 7-point stencil to a vector, v = op*x
+void apply_stencil3d(stencil3d const* op, block_params const* bp, double const* u, double* v);
+
+//////////////////////////////////
+// Blocking operator            //
+//////////////////////////////////
+block_params create_blocks(int nx, int ny, int nz);
+
+//////////////////////////////////
+// Vector operations            //
+//////////////////////////////////
+//
+// initialize a vector with a constant value, x[i] = value for 0<=i<n
+void init(block_params const* bp, double* x, double const value);
+
+// scalar product: return sum_i x[i]*y[i] for 0<=i<n
+double dot(block_params const* bp, double const* x, double const* y);
+
+// vector update: compute y[i] = a*x[i] + b*y[i] for 0<=i<n
+void axpby(block_params const* bp, double a, double const* x, double b, double* y);
 
