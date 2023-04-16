@@ -23,7 +23,8 @@ run_tests.x: run_tests.cpp ${TEST_SRCS} gtest_mpi.o operations.o
 	$(CXX) $(CXXFLAGS) $^ -DUSE_MPI -o $@
 
 test: run_tests.x
-	./run_tests.x
+	mpirun -np 1 ./run_tests.x
+	mpirun -np 8 ./run_tests.x
 
 $(TEST_EXEC): $(SRCS) $(TEST_SRCS)
 	$(CXX) $(CXXFLAGS) $(SRCS) $(TEST_SRCS) -o $(TEST_EXEC)
