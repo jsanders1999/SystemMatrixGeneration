@@ -1,5 +1,5 @@
 CXX = mpic++
-CXXFLAGS = -O2 -g -lm -lstdc++
+CXXFLAGS = -O2 -g -lm -lgtest -lstdc++
 
 SRCS = operations.cpp
 EXEC = operations.x
