@@ -2,7 +2,6 @@
 #include <math.h>
 #include "operations.hpp"
 
-
 void print_array(const double* arr, int size) {
 	printf("[ ");
 	for (int i = 0; i < size; i++) {
@@ -10,65 +9,6 @@ void print_array(const double* arr, int size) {
 	}
 	printf("]\n");
 }
-/*
-//Used for dividing work in apply_stencil3d
-void get_block_parameters(int nx, int ny, int nz, int *nbx, int *nby, int *nbz, int *ixb, int *iyb, int *izb, int* neighbours) {
-	int rank, size;
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-	MPI_Comm_size(MPI_COMM_WORLD, &size);
-	
-	//Number of blocks
-	// EXAMPLE: size=48 -> blocks_x=ceil(3.42)=3; blocks_y=sqrt(16)=4; blocks_z=4 
-	int blocks_x = ceil(pow(size, 1.0/3.0)); 
-	int blocks_y = ceil(sqrt(size/blocks_x));
-	int blocks_z = ceil(size / (blocks_x * blocks_y));
-
-	// block size
-	int bx_sz = (nx + blocks_x - 1) / blocks_x;
-	int by_sz = (ny + blocks_y - 1) / blocks_y;
-	int bz_sz = (nz + blocks_z - 1) / blocks_z;
-
-	// block indices
-	int bx_idx = rank % blocks_x;
-	int by_idx = (rank / blocks_x) % blocks_y;
-	int bz_idx = rank / (blocks_x * blocks_y);
-
-	// Grid points are often not perfectly divisible into blocks, we handle that here.
-	// x-direction
-	int xb_start = bx_idx * bx_sz;
-	int xb_end = xb_start + bx_sz - 1;
-	if (xb_end >= nx) {
-		bx_sz = nx - xb_start;
-	}
-	// y-direction
-	int yb_start = by_idx * by_sz;
-	int yb_end = yb_start + by_sz - 1;
-	if (yb_end >= ny) {
-		by_sz = ny - yb_start;
-	}
-	// z-direction
-	int zb_start = bz_idx * bz_sz;
-	int zb_end = zb_start + bz_sz - 1;
-	if (zb_end >= nz) {
-		bz_sz = nz - zb_start;
-	}
-	
-	//Set outputs for this block
-	*nbx = bx_sz;
-	*nby = by_sz;
-	*nbz = bz_sz;
-	*ixb = xb_start;
-	*iyb = yb_start;
-	*izb = zb_start;
-
-	//Save idx's of our neighbours
-	neighbours[0] = bx_idx > 0            ? rank - 1                   : MPI_PROC_NULL; //west
-	neighbours[1] = bx_idx < blocks_x - 1 ? rank + 1                   : MPI_PROC_NULL; //east
-	neighbours[2] = by_idx > 0            ? rank - blocks_x            : MPI_PROC_NULL; //south
-	neighbours[3] = by_idx < blocks_y - 1 ? rank + blocks_x            : MPI_PROC_NULL; //north
-	neighbours[4] = bz_idx > 0            ? rank - blocks_x * blocks_y : MPI_PROC_NULL; //bot
-	neighbours[5] = bz_idx < blocks_z - 1 ? rank + blocks_x * blocks_y : MPI_PROC_NULL; //top
-}*/
 
 void init(block_params const* BP, double* x, double const value) {
 	long local_n = BP->bx_sz*BP->by_sz*BP->bz_sz;
@@ -101,23 +41,7 @@ void axpby(block_params const* BP, double a, double const* x, double b, double* 
 }
 
 void apply_stencil3d(stencil3d const* S, block_params const* BP, double const* u, double* v) {
-	/*
-	double* send_west_buffer  = (double*) malloc(by_sz * bz_sz * sizeof(double));
-	double* recv_west_buffer  = (double*) malloc(by_sz * bz_sz * sizeof(double));
-	double* send_east_buffer = (double*) malloc(by_sz * bz_sz * sizeof(double));
-	double* recv_east_buffer = (double*) malloc(by_sz * bz_sz * sizeof(double));
 	
-	double* send_south_buffer   = (double*) malloc(bx_sz * bz_sz * sizeof(double));
-	double* recv_south_buffer   = (double*) malloc(bx_sz * bz_sz * sizeof(double));
-	double* send_north_buffer   = (double*) malloc(bx_sz * bz_sz * sizeof(double));
-	double* recv_north_buffer   = (double*) malloc(bx_sz * bz_sz * sizeof(double));
-	
-	double* send_bot_buffer  = (double*) malloc(bx_sz * by_sz * sizeof(double));
-	double* recv_bot_buffer  = (double*) malloc(bx_sz * by_sz * sizeof(double));
-	double* send_top_buffer = (double*) malloc(bx_sz * by_sz * sizeof(double));
-	double* recv_top_buffer = (double*) malloc(bx_sz * by_sz * sizeof(double));
-	*/
-
 	//TODO will these fit on the stack for our grid sizes? 
 	double send_west_buffer[BP->by_sz*BP->bz_sz];
 	double recv_west_buffer[BP->by_sz*BP->bz_sz]; 
@@ -234,6 +158,7 @@ void apply_stencil3d(stencil3d const* S, block_params const* BP, double const* u
 	for (int id=0; id<6; id++)
 		if (neighbours[id] != MPI_PROC_NULL)
 			MPI_Wait(&requests[2*id+1], MPI_STATUS_IGNORE);
+
 	//Use buffers for edge points, apply the stencil.
 	for (int iz=0; iz<BP->bz_sz; iz++) {
 		for (int iy=0; iy<BP->by_sz; iy++) {
