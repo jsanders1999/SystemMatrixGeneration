@@ -13,8 +13,8 @@ TEST(operations, dot) {
 		y[i] = 1.0 / (double)(i+1);
 	}
 	block_params BP = create_blocks(nx, ny, nz);
-	init(&BP, x, 22);
-	double dot_result = 99999; //dot(&BP, x, y); TODO what is this linking error??
+	
+	double dot_result = dot(n, x, y); //TODO what is this linking error??
 	
 	int rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -59,7 +59,7 @@ TEST(operations, init){
 
 	double val=42.0;
 	block_params BP = create_blocks(nx, ny, nz);
-	init(&BP, x, val);
+	init(n, x, val);
 
 	double err=0.0;
 	for (int i=0; i<n; i++) err = std::max(err, std::abs(x[i]-val));

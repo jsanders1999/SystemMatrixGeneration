@@ -10,17 +10,15 @@ void print_array(const double* arr, int size) {
 	printf("]\n");
 }
 
-void init(block_params const* BP, double* x, double const value) {
-	long local_n = BP->bx_sz*BP->by_sz*BP->bz_sz;
+void init(int const local_n, double* x, double const value) {
 	for (int id=0; id<local_n; id++) {
 		x[id] = value;
 	}
 	return;
 }
 
-double dot(block_params* BP, double const* x, double const* y) {
+double dot(int const local_n, double const* x, double const* y) {
 	double local_dot = 0.0;
-	long local_n = BP->bx_sz*BP->by_sz*BP->bz_sz;
 
 	for (int id = 0; id < local_n; id++) {
 		local_dot += x[id] * y[id];
@@ -32,8 +30,7 @@ double dot(block_params* BP, double const* x, double const* y) {
 	return global_dot;
 }
 
-void axpby(block_params const* BP, double a, double const* x, double b, double* y){
-	long local_n = BP->bx_sz*BP->by_sz*BP->bz_sz;
+void axpby(int const local_n, double a, double const* x, double b, double* y){
 	for (int id=0; id<local_n; id++) {
 		y[id] = a*x[id]+b*y[id];
 	}

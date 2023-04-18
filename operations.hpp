@@ -88,11 +88,11 @@ block_params create_blocks(int nx, int ny, int nz);
 //////////////////////////////////
 //
 // initialize a vector with a constant value, x[i] = value for 0<=i<n
-void init(block_params const* bp, double* x, double const value);
+void init(int const n, double* x, double const value);
 
 // scalar product: return sum_i x[i]*y[i] for 0<=i<n
-double dot(block_params const* bp, double const* x, double const* y);
+double dot(int const n, double const* x, double const* y);
 
 // vector update: compute y[i] = a*x[i] + b*y[i] for 0<=i<n
-void axpby(block_params const* bp, double a, double const* x, double b, double* y);
+void axpby(int const n, double a, double const* x, double b, double* y);
 

@@ -19,7 +19,7 @@ all: $(EXEC)
 $(EXEC): $(SRCS)
 	$(CXX) $(CXXFLAGS) $(SRCS) -o $(EXEC)
 
-run_tests.x: run_tests.cpp ${TEST_SRCS} gtest_mpi.o operations.o
+run_tests.x: run_tests.cpp ${TEST_SRCS} operations.o gtest_mpi.o
 	$(CXX) $(CXXFLAGS) $^ -DUSE_MPI -o $@
 
 test: run_tests.x
@@ -27,6 +27,11 @@ test: run_tests.x
 
 $(TEST_EXEC): $(SRCS) $(TEST_SRCS)
 	$(CXX) $(CXXFLAGS) $(SRCS) $(TEST_SRCS) -o $(TEST_EXEC)
+
+solver: main_cg_poisson.cpp cg_solver.cpp cg_solver.hpp operations.hpp
+	$(CXX) $(CXXFLAGS) main_cg_poisson.cpp cg_solver.cpp -o solver.x
+	mpirun -np 1 ./solver.x
+	mpirun -np 8 ./solver.x
 
 clean:
 	rm -f $(EXEC) $(TEST_EXEC)
