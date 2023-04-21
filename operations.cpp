@@ -19,7 +19,9 @@ void init(int const local_n, double* x, double const value) {
 
 double dot(int const local_n, double const* x, double const* y) {
 	double local_dot = 0.0;
-
+	
+	int size;
+	MPI_Comm_size(MPI_COMM_WORLD, &size);
 	for (int id = 0; id < local_n; id++) {
 		local_dot += x[id] * y[id];
 	}
@@ -155,16 +157,15 @@ void apply_stencil3d(stencil3d const* S, block_params const* BP, double const* u
 	for (int id=0; id<6; id++)
 		if (neighbours[id] != MPI_PROC_NULL)
 			MPI_Wait(&requests[2*id+1], MPI_STATUS_IGNORE);
-
+	
 	//Use buffers for edge points, apply the stencil.
 	for (int iz=0; iz<BP->bz_sz; iz++) {
 		for (int iy=0; iy<BP->by_sz; iy++) {
 			for (int ix=0; ix<BP->bx_sz; ix++) {
-				int ew_id = BP->bz_sz*iz+iy; 
-				int ns_id = BP->bz_sz*iz+ix; 
-				int tb_id = BP->by_sz*iy+ix; 
-				//printf("%d %d %d, %d %d %d\n", ix, iy, iz, BP->bz_sz, BP->by_sz, BP->bz_sz);
-				double accum = S->value_c * u[S->index_c(ix, iy, iz)]; //TODO make branchless
+				int ew_id = BP->by_sz*iz+iy; 
+				int ns_id = BP->bx_sz*iz+ix; 
+				int tb_id = BP->bx_sz*iy+ix; 
+				double accum = S->value_c * u[S->index_c(ix, iy, iz)];
 				accum += S->value_w * ((ix==0            ) ? recv_west_buffer[ew_id]  : u[S->index_w(ix, iy, iz)]);
 				accum += S->value_e * ((ix==0+BP->bx_sz-1) ? recv_east_buffer[ew_id]  : u[S->index_e(ix, iy, iz)]);
 				accum += S->value_s * ((iy==0            ) ? recv_south_buffer[ns_id] : u[S->index_s(ix, iy, iz)]);
@@ -172,7 +173,6 @@ void apply_stencil3d(stencil3d const* S, block_params const* BP, double const* u
 				accum += S->value_b * ((iz==0            ) ? recv_bot_buffer[tb_id]   : u[S->index_b(ix, iy, iz)]);
 				accum += S->value_t * ((iz==0+BP->bz_sz-1) ? recv_top_buffer[tb_id]   : u[S->index_t(ix, iy, iz)]);
 				v[S->index_c(ix, iy, iz)] = accum;
-				
 			}
 		}
 	}
@@ -189,6 +189,11 @@ block_params create_blocks(int nx, int ny, int nz) {
 	BP.bkx = ceil(pow(size, 1.0/3.0));
 	BP.bky = ceil(sqrt(size/BP.bkx));
 	BP.bkz = ceil(size / (BP.bkx * BP.bky));
+
+	if (rank==0 && size!=BP.bkx*BP.bky*BP.bkz) {
+		printf("ERROR: Invalid number of MPI processes (%d), can't create blocks. Try using %d instead.\n", size, BP.bkx*BP.bky*BP.bkz);
+		exit(1);
+	}
 	// Calculate the sizes (ignoring divisibility)
 	BP.bx_sz = (nx + BP.bkx - 1) / BP.bkx;
 	BP.by_sz = (ny + BP.bky - 1) / BP.bky;
@@ -197,6 +202,10 @@ block_params create_blocks(int nx, int ny, int nz) {
 	BP.bx_idx = rank % BP.bkx;
 	BP.by_idx = (rank / BP.bkx) % BP.bky;
 	BP.bz_idx = rank / (BP.bkx * BP.bky);
+	// Save start index (gridpoint) in x y and z directions
+	BP.bx_start = BP.bx_idx*BP.bx_sz;
+	BP.by_start = BP.by_idx*BP.by_sz;
+	BP.bz_start = BP.bz_idx*BP.bz_sz;
 	// Grid points are often not perfectly divisible into blocks, we handle that here.
 	// x-direction
 	int xb_start = BP.bx_idx * BP.bx_sz;
