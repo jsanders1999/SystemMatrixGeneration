@@ -1,6 +1,5 @@
 #include "cg_solver.hpp"
-#//include "operations.hpp" //TODO linking??
-#include "operations.cpp"
+#include "operations.hpp" //TODO linking??
 #include <cmath>
 #include <stdexcept>
 #include <iostream>
