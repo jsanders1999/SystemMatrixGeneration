@@ -65,12 +65,15 @@ typedef struct block_params
   int bkx, bky, bkz;
   //index in x, y and z direction of this block
   int bx_idx, by_idx, bz_idx;
+  //index (gridpoint) in x y and z directions
+  int bx_start, by_start, bz_start;
   // grid dimensions
   int bx_sz, by_sz, bz_sz;
   // neighbour ranks
   int rank_e, rank_w, rank_n, rank_s, rank_b, rank_t;
 } block_params;
 
+void print_array(const double* arr, int size);
 //////////////////////////////////
 // Linear operator application  //
 //////////////////////////////////
