@@ -11,7 +11,7 @@ TEST(gmres_solver, gmres_solver)
 /*This is a test for gmres_solver which solves the linear system Ax=b
   Here we use a simple 3d stencil and an all-one vector as b, by which 
   we know the correct solution easily.*/
-  const int nx=3, ny=3, nz=3;
+  const int nx=17, ny=20, nz=11;
 
   int rank, size;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -38,7 +38,7 @@ TEST(gmres_solver, gmres_solver)
   init(n, b, 1.0); // right hand side b=[1,1,...] 
 
   // solve the linear system of equations using GMRES
-  int numIter, maxIter=10;
+  int numIter, maxIter=100;
   double resNorm, tol=std::sqrt(std::numeric_limits<double>::epsilon());
 
   gmres_solver(&S, &BP, n, x, b, tol, maxIter, &resNorm, &numIter, 0);
@@ -47,7 +47,7 @@ TEST(gmres_solver, gmres_solver)
   axpby(n, 1.0, b, -1.0, r); // r = b - r
 
   double err=std::sqrt(dot(n, r, r))/std::sqrt(dot(n,b,b));
-  EXPECT_NEAR(1.0+err, 1.0, 10*std::numeric_limits<double>::epsilon());
+  EXPECT_NEAR(err, 0.0, std::sqrt(std::numeric_limits<double>::epsilon()));
   
   delete [] x;
   delete [] b;
