@@ -133,3 +133,70 @@ TEST(operations, stencil3d_symmetric){
 	delete [] e;
 	delete [] A;
 }
+
+
+TEST(operations, given_rotation)
+{
+  int k = 3;
+  double h[k+2] = {-0.2910, -0.0411, -0.1517, 0.1386, 0.2944};
+  double cs[k+2] = {0.9753,  0.2696, -0.5138, 0.0, 0.0};
+  double sn[k+2] = {0.2208,  0.9630,  0.8579, 0.0, 0.0};
+  double resh[k+2] = {-0.292887, -0.139571, 0.151877, 0.294843, 0.0}; 
+
+  given_rotation(k, h, cs, sn);
+ 
+  double err=0.0;
+  for (int i=0; i<k+2; i++) err = std::max(err, std::abs(h[i]-resh[i]));
+  EXPECT_NEAR(1.0+err, 1.0, 1e-5);
+}
+
+
+TEST(operations, arnoldi)
+{
+  int k = 0;
+  int n, nx=2, ny=2, nz=2;
+
+  int rank, size;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+  block_params BP = create_blocks(nx, ny, nz);
+  stencil3d S;
+  S.nx=BP.bx_sz; S.ny=BP.by_sz; S.nz=BP.bz_sz;
+  n = S.nx * S.ny * S.nz;
+  S.value_c = 6;
+  S.value_n = 1;
+  S.value_e = 1;
+  S.value_s = 1;
+  S.value_w = 1;
+  S.value_b = 1;
+  S.value_t = 1;
+
+  // Q and H are stored by column major
+  double* Q = new double[2*n];
+  double* H = new double[2];
+  // initialize Q and H
+  init(n, Q, -0.3536);
+  init(n,Q+n,0.0);
+  init(2, H, 0.0);
+
+  arnoldi(k, Q, H, &S, &BP);
+
+  double res_q[n];
+  double res_h[2];
+  init(n, res_q, 0.3536);
+  res_h[0]=9.0024; res_h[1]=0.0024;
+
+  double err = 0.0;
+  for (int i=0; i<n; i++) err = std::max(err, std::abs(Q[(k+1)*n+i]-res_q[i]));
+  for (int i=0; i<2; i++) err = std::max(err, std::abs(H[i]-res_h[i]));
+
+  EXPECT_NEAR(1.0+err, 1.0, 1e-4);
+
+  delete [] Q;
+  delete [] H;
+}
+
+
+
+

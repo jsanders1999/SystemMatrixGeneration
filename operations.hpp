@@ -99,3 +99,9 @@ double dot(int const n, double const* x, double const* y);
 // vector update: compute y[i] = a*x[i] + b*y[i] for 0<=i<n
 void axpby(int const n, double a, double const* x, double b, double* y);
 
+//////////////////////////////////
+// GMRES operations             //
+//////////////////////////////////
+
+void given_rotation(int k, double* h, double* cs, double* sn);
+void arnoldi(int k, double* Q, double* h, stencil3d const* op, block_params const* BP); 

@@ -1,6 +1,6 @@
 #include "operations.hpp"
 #include "cg_solver.hpp"
-//#include "timer.hpp"
+#include "timer.hpp"
 
 #include <iostream>
 #include <cmath>
@@ -122,7 +122,7 @@ int main(int argc, char* argv[]){
 	int numIter, maxIter=150;
 	double resNorm, tol=std::sqrt(std::numeric_limits<double>::epsilon());
 
-	try {
+	try {   Timer t("cg solver");
 		cg_solver(&L, &BP, loc_n, x, b, tol, maxIter, &resNorm, &numIter, 1);
 	} catch(std::exception e) {
 		std::cerr << "Caught an exception in cg_solve: " << e.what() << std::endl;
@@ -131,7 +131,7 @@ int main(int argc, char* argv[]){
 	delete [] x;
 	delete [] b;
 
-	//Timer::summarize();
+	if (rank==0) Timer::summarize();
 
 	// no MPI calls must be issued after this one...
 	MPI_Finalize();

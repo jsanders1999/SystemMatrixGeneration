@@ -1,6 +1,7 @@
 #include <mpi.h>
 #include <math.h>
 #include "operations.hpp"
+#include <iostream>
 
 void print_array(const double* arr, int size) {
 	printf("[ ");
@@ -234,3 +235,47 @@ block_params create_blocks(int nx, int ny, int nz) {
 	BP.rank_t = BP.bz_idx < BP.bkz - 1 ? rank + BP.bkx * BP.bky : MPI_PROC_NULL; //top
 	return BP;
 }
+
+
+// apply given rotation
+void given_rotation(int k, double* h, double* cs, double* sn)
+{
+  double temp, t, cs_k, sn_k;
+  for (int i=0; i<k; i++)
+  {
+     temp = cs[i] * h[i] + sn[i] * h[i+1];
+     h[i+1] = -sn[i] * h[i] + cs[i] * h[i+1];
+     h[i] = temp;
+  }
+  
+  // update the next sin cos values for rotation
+  t = std::sqrt( h[k]*h[k] + h[k+1]*h[k+1] );
+  cs[k] = h[k]/t;
+  sn[k] = h[k+1]/t;
+
+  // eliminate H(i+1,i)
+  h[k] = cs[k]*h[k] + sn[k]*h[k+1];
+  h[k+1] = 0.0;
+
+  return;
+}
+
+// Arnoldi function
+void arnoldi(int k, double* Q, double* h, stencil3d const* op, block_params const* BP) 
+{
+  int n = op->nx * op->ny * op->nz;
+  apply_stencil3d(op, BP, Q+k*n, Q+(k+1)*n);
+ 
+  for (int i=0; i<=k; i++)
+  {
+    h[i] = dot(n, Q+(k+1)*n, Q+i*n);
+    axpby(n, -h[i], Q+i*n, 1.0, Q+(k+1)*n);
+  }
+
+  h[k+1] = std::sqrt(dot(n, Q+(k+1)*n, Q+(k+1)*n));
+  for (int i=0; i<n; i++)
+    Q[(k+1)*n+i] = Q[(k+1)*n+i] / h[k+1];
+ 
+ return; 
+}
+
