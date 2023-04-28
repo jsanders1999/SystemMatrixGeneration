@@ -28,7 +28,7 @@ std::map<std::string, double> Timer::min_time_;
   Timer::~Timer()
   {
     double t_end = omp_get_wtime();
-    double t_diff = t_end = t_start_;
+    double t_diff = t_end - t_start_;
     times_[label_] += t_diff;
     squared_times_[label_] += (t_diff)*(t_diff);
     counts_[label_]++;
