@@ -68,7 +68,7 @@ void gmres_solver(stencil3d const* op, block_params const* BP, int n, double* x,
   // start GMRES iteration
   int iter = -1;
   while (true)
-  { Timer timerGMRES("GMRES solver itteration");
+  { Timer timerGMRES("Full GMRES solver iteration");
     iter++;
 
     if (verbose && rank==0 && iter%10==0)

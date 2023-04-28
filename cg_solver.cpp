@@ -30,7 +30,7 @@ void cg_solver(stencil3d const* op, block_params const* BP, int n, double* x, do
 	// start CG iteration
 	int iter = -1;
 	while (true)
-	{	Timer timerCG("CG solver itteration");
+	{	Timer timerCG("Full CG solver iteration");
 		iter++;
 		// rho = <r, r>
 		rho = dot(n, r, r);

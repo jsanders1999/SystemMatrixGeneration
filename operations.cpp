@@ -2,6 +2,7 @@
 #include <math.h>
 #include "operations.hpp"
 #include <iostream>
+#include timer.h
 
 void print_array(const double* arr, int size) {
 	printf("[ ");
@@ -12,6 +13,7 @@ void print_array(const double* arr, int size) {
 }
 
 void init(int const local_n, double* x, double const value) {
+	Timer timerinit("Init operation")
 	for (int id=0; id<local_n; id++) {
 		x[id] = value;
 	}
@@ -19,6 +21,7 @@ void init(int const local_n, double* x, double const value) {
 }
 
 double dot(int const local_n, double const* x, double const* y) {
+	Timer timerdot("dot operation")
 	double local_dot = 0.0;
 	
 	int size;
@@ -34,6 +37,7 @@ double dot(int const local_n, double const* x, double const* y) {
 }
 
 void axpby(int const local_n, double a, double const* x, double b, double* y){
+	Timer timeraxpby("axpby operation")
 	for (int id=0; id<local_n; id++) {
 		y[id] = a*x[id]+b*y[id];
 	}
@@ -41,6 +45,7 @@ void axpby(int const local_n, double a, double const* x, double b, double* y){
 }
 
 void apply_stencil3d(stencil3d const* S, block_params const* BP, double const* u, double* v) {
+	Timer timerstencil("Stencil application operation")
 	
 	//TODO will these fit on the stack for our grid sizes? 
 	double send_west_buffer[BP->by_sz*BP->bz_sz];
@@ -238,8 +243,9 @@ block_params create_blocks(int nx, int ny, int nz) {
 
 
 // apply given rotation
-void given_rotation(int k, double* h, double* cs, double* sn)
-{
+void given_rotation(int k, double* h, double* cs, double* sn){
+  Timer timergivens("Givens rotation operation")
+
   double temp, t, cs_k, sn_k;
   for (int i=0; i<k; i++)
   {
@@ -261,8 +267,8 @@ void given_rotation(int k, double* h, double* cs, double* sn)
 }
 
 // Arnoldi function
-void arnoldi(int k, double* Q, double* h, stencil3d const* op, block_params const* BP) 
-{
+void arnoldi(int k, double* Q, double* h, stencil3d const* op, block_params const* BP) {
+  Timer timerArnoldi("Arnoldi operation")
   int n = op->nx * op->ny * op->nz;
   apply_stencil3d(op, BP, Q+k*n, Q+(k+1)*n);
  

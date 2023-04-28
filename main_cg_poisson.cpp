@@ -56,7 +56,7 @@ int main(int argc, char* argv[]){
 	
 	int nx, ny, nz;
 
-	if      (argc==1) {nx=128;           ny=128;           nz=128;}
+	if      (argc==1) {nx=64;           ny=64;           nz=64;}
 	else if (argc==2) {nx=atoi(argv[1]); ny=nx;            nz=nx;}
 	else if (argc==4) {nx=atoi(argv[1]); ny=atoi(argv[2]); nz=atoi(argv[3]);}
 	else {std::cerr << "Invalid number of arguments (should be 0, 1 or 3)"<<std::endl; exit(-1);}
@@ -119,7 +119,7 @@ int main(int argc, char* argv[]){
 	}
 
 	// solve the linear system of equations using CG
-	int numIter, maxIter=500;
+	int numIter, maxIter=1000;
 	double resNorm, tol=std::sqrt(std::numeric_limits<double>::epsilon());
 
 	try {   Timer t("cg solver");
