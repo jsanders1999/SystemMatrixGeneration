@@ -108,8 +108,6 @@ TEST(gmres_solver, gmres_and_cg_comparison)
   init(n, z, 0.0); // solution starts with [0,0,...]
 
   // initialize b with f(x,y,z) in the interior of the domain
-
-	double *b = new double[n];
 	init(n, b, 0.0);
 
 	for (int iz=0; iz<BP.bz_sz; iz++){
@@ -137,11 +135,11 @@ TEST(gmres_solver, gmres_and_cg_comparison)
   double resNorm, tol=std::sqrt(std::numeric_limits<double>::epsilon());
 
   gmres_solver(&S, &BP, n, x, b, tol, maxIter, &resNorm, &numIter, 1);
-  cg_solver(&S, &BP, n, y, b, tol, maxIter, &resNorm, &numIter, 1)
+  cg_solver(&S, &BP, n, y, b, tol, maxIter, &resNorm, &numIter, 1);
 
   //z = x-y
-  axpby(1.0, x, 0.0, z)
-  axpby(-1.0, y, 1.0, z)
+  axpby(1.0, x, 0.0, z);
+  axpby(-1.0, y, 1.0, z);
 
 
   double rel_err=std::sqrt(dot(n, z, z))/std::sqrt(dot(n, b, b));
