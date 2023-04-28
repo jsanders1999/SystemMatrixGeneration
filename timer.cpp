@@ -22,8 +22,6 @@ std::map<std::string, double> Timer::min_time_;
   : label_(label)
   {
     t_start_ = omp_get_wtime();
-    max_time_[label_] = (0.0>max_time_[label_])?0.0:max_time_[label_];
-    min_time_[label_] = (1e12<max_time_[label_])?1e12:min_time_[label_];
   }
 
 
@@ -43,7 +41,7 @@ void Timer::summarize(std::ostream& os)
   os << "\n\n\n" << std::endl;
   //os << "==================== TIMER SUMMARY =========================================" << std::endl;
   //os << "label,                                   \tcalls,     \ttotal time, \tmean time, \tstd time, "<<std::endl;
-  std::cout << std::setw(20) << "label" << ",\t" << std::setw(10) << "calls" << ",\t" << std::setw(10) << "total time" << ",\t" << std::setw(10) << "max time" <<",/t" << std::setw(10) << "mean time" << ",\t" << std::setw(10) << "min time" <<",/t" << std::setw(10) << "std time" <<"," << std::endl;
+  std::cout << std::setw(20) << "label" << ",\t" << std::setw(10) << "calls" << ",\t" << std::setw(10) << "total time" << ",\t" << std::setw(10) << "max time" <<",\t" << std::setw(10) << "mean time" << ",\t" << std::setw(10) << "min time" <<",\t" << std::setw(10) << "std time" <<"," << std::endl;
   //os << "----------------------------------------------" << std::endl;
 
   
