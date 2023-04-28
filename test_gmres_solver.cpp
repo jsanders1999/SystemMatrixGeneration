@@ -146,6 +146,8 @@ TEST(gmres_solver, gmres_and_cg_comparison)
   EXPECT_NEAR(rel_err, 0.0, std::sqrt(std::numeric_limits<double>::epsilon()));
   
   delete [] x;
+  delete [] y;
+  delete [] z;
   delete [] b;
   delete [] r;
 
