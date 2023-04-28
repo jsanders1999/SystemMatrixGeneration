@@ -272,7 +272,8 @@ void arnoldi(int k, double* Q, double* h, stencil3d const* op, block_params cons
   Timer timerArnoldi("7. Arnoldi operation");
   int n = op->nx * op->ny * op->nz;
   apply_stencil3d(op, BP, Q+k*n, Q+(k+1)*n);
- 
+	
+  #pragma omp parallel for
   for (int i=0; i<=k; i++)
   {
     h[i] = dot(n, Q+(k+1)*n, Q+i*n);
