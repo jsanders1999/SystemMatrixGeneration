@@ -45,7 +45,7 @@ void axpby(int const local_n, double a, double const* x, double b, double* y){
 }
 
 void apply_stencil3d(stencil3d const* S, block_params const* BP, double const* u, double* v) {
-	Timer timerstencil("3. Stencil application operation");
+	Timer timerstencil("3. Stencil operation");
 	
 	//TODO will these fit on the stack for our grid sizes? 
 	double send_west_buffer[BP->by_sz*BP->bz_sz];
