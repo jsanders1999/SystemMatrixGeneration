@@ -116,7 +116,7 @@ TEST(gmres_solver, gmres_and_cg_comparison)
 			double y = (BP.by_start+iy)*dy;
 			for (int ix=0; ix<BP.bx_sz; ix++){
 				double x = (BP.bx_start+ix)*dx;
-				b[L.index_c(ix,iy,iz)] = f(x,y,z);
+				b[S.index_c(ix,iy,iz)] = f(x,y,z);
 			}
 		}
 	}
@@ -125,7 +125,7 @@ TEST(gmres_solver, gmres_and_cg_comparison)
 	if (BP.bz_start==0) {
 		for (int iy=0; iy<BP.by_sz; iy++) {
 			for (int ix=0; ix<BP.bx_sz; ix++){
-				b[L.index_c(ix,iy,0)] -= L.value_b*g_0((BP.bx_start+ix)*dx, (BP.by_start+iy)*dy);
+				b[S.index_c(ix,iy,0)] -= S.value_b*g_0((BP.bx_start+ix)*dx, (BP.by_start+iy)*dy);
 			}
 		}
 	}
