@@ -32,7 +32,7 @@ std::map<std::string, double> Timer::min_time_;
     times_[label_] += t_diff;
     squared_times_[label_] += (t_diff)*(t_diff);
     counts_[label_]++;
-    if(max_time_[label_]=0.0){ //If this is the first time calling the max_time_ map for this label:
+    if(max_time_[label_]==0.0){ //If this is the first time calling the max_time_ map for this label:
       max_time_[label_] += t_diff;
       min_time_[label_] += t_diff;
     } else { //If the max_time_ map has already been called for this label:
