@@ -35,7 +35,9 @@ TEST(gmres_solver, gmres_solver_symm_stencil)
 
   const int n = BP.bx_sz*BP.by_sz*BP.bz_sz;
 
-  double *x = new double[n]; // solution vector x
+  double *x = new double[n]; // GMRES solution vector x
+  double *y = new double[n]; // CG solution vector y
+  double *z = new double[n]; // Difference in solutions vector z = x - y
   double *b = new double[n]; // right hand side vector b
   double *r = new double[n]; // residual r=Ax-b
 
