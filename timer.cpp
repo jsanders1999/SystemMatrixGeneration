@@ -17,13 +17,13 @@ std::map<std::string, double> Timer::times_;
 std::map<std::string, double> Timer::squared_times_;
 std::map<std::string, double> Timer::max_time_;
 std::map<std::string, double> Timer::min_time_;
-max_time_[label_] = 1e10;
-min_time_[label_] = 0.0;
 
   Timer::Timer(std::string label)
   : label_(label)
   {
     t_start_ = omp_get_wtime();
+    max_time_[label_] = (0.0>max_time_[label_])?0.0:max_time_[label_];
+    min_time_[label_] = (1e12<max_time_[label_])?1e12:min_time_[label_];
   }
 
 
@@ -33,8 +33,8 @@ min_time_[label_] = 0.0;
     double t_diff = t_end = t_start_;
     times_[label_] += t_diff;
     squared_times_[label_] += (t_diff)*(t_diff);
-    max_time_[label_] = (t_diff<max_time_[label_])?t_diff:max_time_[label_];
-    min_time_[label_] = (t_diff>max_time_[label_])?t_diff:max_time_[label_];
+    max_time_[label_] = (t_diff>max_time_[label_])?t_diff:max_time_[label_];
+    min_time_[label_] = (t_diff<min_time_[label_])?t_diff:min_time_[label_];
     counts_[label_]++;
   }
 
