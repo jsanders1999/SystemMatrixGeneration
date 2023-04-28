@@ -134,8 +134,8 @@ TEST(gmres_solver, gmres_and_cg_comparison)
   int numIter, maxIter=500;
   double resNorm, tol=std::sqrt(std::numeric_limits<double>::epsilon());
 
-  gmres_solver(&S, &BP, n, x, b, tol, maxIter, &resNorm, &numIter, 1);
-  cg_solver(&S, &BP, n, y, b, tol, maxIter, &resNorm, &numIter, 1);
+  gmres_solver(&S, &BP, n, x, b, tol, maxIter, &resNorm, &numIter, 0);
+  cg_solver(&S, &BP, n, y, b, tol, maxIter, &resNorm, &numIter, 0);
 
   //z = x-y
   axpby(n,  1.0, x, 0.0, z);
