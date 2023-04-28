@@ -71,7 +71,7 @@ void gmres_solver(stencil3d const* op, block_params const* BP, int n, double* x,
   {
     iter++;
 
-    if (verbose && rank==0)
+    if (verbose && rank==0 && iter%10==0)
     {
       std::cout << std::setw(4) << iter << "\t" << std::setw(8) << std::setprecision(4) << error << std::endl;
     }

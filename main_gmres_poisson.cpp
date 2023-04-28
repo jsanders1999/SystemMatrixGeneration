@@ -127,7 +127,7 @@ int main(int argc, char* argv[])
   }
 
   // solve the linear system of equations using GMRES
-  int numIter, maxIter=100;
+  int numIter, maxIter=500;
   double resNorm, tol=std::sqrt(std::numeric_limits<double>::epsilon());
 
   try {
