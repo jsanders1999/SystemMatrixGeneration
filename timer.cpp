@@ -36,8 +36,8 @@ std::map<std::string, double> Timer::min_time_;
       max_time_[label_] += t_diff;
       min_time_[label_] += t_diff;
     } else { //If the max_time_ map has already been called for this label:
-      max_time_[label_] += (t_diff>max_time_[label_])?t_diff:max_time_[label_];
-      min_time_[label_] += (t_diff<min_time_[label_])?t_diff:min_time_[label_];
+      max_time_[label_] = (t_diff>max_time_[label_])?t_diff:max_time_[label_];
+      min_time_[label_] = (t_diff<min_time_[label_])?t_diff:min_time_[label_];
     }
   }
 
