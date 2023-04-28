@@ -2,7 +2,7 @@
 #include <math.h>
 #include "operations.hpp"
 #include <iostream>
-#include timer.h
+#include "timer.hpp"
 
 void print_array(const double* arr, int size) {
 	printf("[ ");

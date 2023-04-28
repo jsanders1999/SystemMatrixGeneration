@@ -3,7 +3,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <mpi.h>
-#include timer.hpp
+#include "timer.hpp"
 
 // struct to represent a 3D 7-point stencil:
 //
