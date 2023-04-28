@@ -57,4 +57,5 @@ void Timer::summarize(std::ostream& os)
     std::cout << std::setw(20) << label << ",\t" << std::setw(10) << count << ",\t" << std::setw(10) << time << ",\t" << std::setw(10) << max_time_[label] << ",\t" << std::setw(10) << time/double(count) << ",\t" << std::setw(10) << min_time_[label] << ",\t" << std::setw(10) << sigma <<"," << std::endl;
   }
   //os << "============================================================================" << std::endl;
+  os << "\n\n\n" << std::endl;
 }
