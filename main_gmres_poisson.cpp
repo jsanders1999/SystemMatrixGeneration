@@ -33,6 +33,7 @@ double g_0(double x, double y)
   return x*(1.0-x)*y*(1-y);
 }
 
+// Stencil for [∇^2 + d/dx] (Convection-diffusion with convection in x direction)
 stencil3d laplace3d_stencil(int nx, int ny, int nz, double dx, double dy, double dz)
 {
   //if (nx<=2 || ny<=2 || nz<=2) throw std::runtime_error("need at least two grid points in each direction to implement boundary conditions.");
@@ -40,9 +41,9 @@ stencil3d laplace3d_stencil(int nx, int ny, int nz, double dx, double dy, double
   L.nx=nx; L.ny=ny; L.nz=nz;
   L.value_c =  2.0/(dx*dx) + 2.0/(dy*dy) + 2.0/(dz*dz);
   L.value_n = -1.0/(dy*dy);
-  L.value_e = -1.0/(dx*dx);
+  L.value_e = -1.0/(dx*dx) + 0.5/dx;
   L.value_s = -1.0/(dy*dy);
-  L.value_w = -1.0/(dx*dx);
+  L.value_w = -1.0/(dx*dx) - 0.5/dx;
   L.value_t = -1.0/(dz*dz);
   L.value_b = -1.0/(dz*dz);
   return L;
