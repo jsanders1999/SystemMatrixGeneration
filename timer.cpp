@@ -17,6 +17,8 @@ std::map<std::string, double> Timer::times_;
 std::map<std::string, double> Timer::squared_times_;
 std::map<std::string, double> Timer::max_time_;
 std::map<std::string, double> Timer::min_time_;
+max_time_[label_] = 1e10;
+min_time_[label_] = 0.0;
 
   Timer::Timer(std::string label)
   : label_(label)
@@ -38,10 +40,10 @@ std::map<std::string, double> Timer::min_time_;
 
 void Timer::summarize(std::ostream& os)
 {
-  os << " " << std::endl;
+  os << "\n\n\n" << std::endl;
   //os << "==================== TIMER SUMMARY =========================================" << std::endl;
   //os << "label,                                   \tcalls,     \ttotal time, \tmean time, \tstd time, "<<std::endl;
-  std::cout << std::setw(20) << "label" << ",\t" << std::setw(10) << "calls" << ",\t" << std::setw(10) << "total time" << ",\t" << std::setw(10) << "max time" <<"," << std::setw(10) << "mean time" << ",\t" << std::setw(10) << "min time" <<"," << std::setw(10) << "std time" <<"," << std::endl;
+  std::cout << std::setw(20) << "label" << ",\t" << std::setw(10) << "calls" << ",\t" << std::setw(10) << "total time" << ",\t" << std::setw(10) << "max time" <<",/t" << std::setw(10) << "mean time" << ",\t" << std::setw(10) << "min time" <<",/t" << std::setw(10) << "std time" <<"," << std::endl;
   //os << "----------------------------------------------" << std::endl;
 
   
@@ -49,7 +51,7 @@ void Timer::summarize(std::ostream& os)
   {
     int count = counts_[label];
     double sigma = sqrt(squared_times_[label]/count-time*time/double(count*count));
-    std::cout << std::setw(20) << label << ",\t" << std::setw(10) << count << ",\t" << std::setw(10) << time << ",\t" << std::setw(10) << max_time_[label] << std::setw(10) << time/double(count) << ",\t" << std::setw(10) << min_time_[label] << std::setw(10) << sigma <<"," << std::endl;
+    std::cout << std::setw(20) << label << ",\t" << std::setw(10) << count << ",\t" << std::setw(10) << time << ",\t" << std::setw(10) << max_time_[label] << ",\t" << std::setw(10) << time/double(count) << ",\t" << std::setw(10) << min_time_[label] << ",\t" << std::setw(10) << sigma <<"," << std::endl;
   }
   //os << "============================================================================" << std::endl;
 }
