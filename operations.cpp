@@ -4,7 +4,7 @@
 #include <iostream>
 #include "timer.hpp"
 
-void print_array(const double* arr, int size) {
+void print_array(const double* arr, int const size) {
 	printf("[ ");
 	for (int i = 0; i < size; i++) {
 		printf("%.2f ", arr[i]);
@@ -36,10 +36,19 @@ double dot(int const local_n, double const* x, double const* y) {
 	return global_dot;
 }
 
-void axpby(int const local_n, double a, double const* x, double b, double* y){
+void axpby(int const local_n, double const a, double const* x, double const b, double* y){
 	Timer timeraxpby("2. axpby operation");
 	for (int id=0; id<local_n; id++) {
 		y[id] = a*x[id]+b*y[id];
+	}
+	return;
+}
+
+// y = a*x+y
+void axpy(int const local_n, double const a, double const* x, double* y){
+	Timer timeraxpby("2. axpby operation");
+	for (int id=0; id<local_n; id++) {
+		y[id] += a*x[id];
 	}
 	return;
 }
@@ -185,7 +194,7 @@ void apply_stencil3d(stencil3d const* S, block_params const* BP, double const* u
 	return;
 }
 
-block_params create_blocks(int nx, int ny, int nz) {
+block_params create_blocks(int const nx, int const ny, int const nz) {
 	//Timer timerblock("4. Block creation operation");
 	int rank, size;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -244,7 +253,7 @@ block_params create_blocks(int nx, int ny, int nz) {
 
 
 // apply given rotation
-void given_rotation(int k, double* h, double* cs, double* sn){
+void given_rotation(int const k, double* h, double* cs, double* sn){
   Timer timergivens("4. Givens rotation");
 
   double temp, t, cs_k, sn_k;
@@ -268,7 +277,7 @@ void given_rotation(int k, double* h, double* cs, double* sn){
 }
 
 // Arnoldi function
-void arnoldi(int k, double* Q, double* h, stencil3d const* op, block_params const* BP) {
+void arnoldi(int const k, double* Q, double* h, stencil3d const* op, block_params const* BP) {
   Timer timerArnoldi("5. Arnoldi function");
   int n = op->nx * op->ny * op->nz;
   apply_stencil3d(op, BP, Q+k*n, Q+(k+1)*n);
