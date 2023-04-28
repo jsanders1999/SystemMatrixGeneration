@@ -7,7 +7,7 @@
 
 #include <iostream>
 #include <iomanip>
-#include <cmath.h>
+#include <math.h>
 
 // static members of a class must be defined
 // somewhere in an object file, otherwise you
