@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <iomanip>
-//#include "timer.hpp"
+#include "timer.hpp"
 
 void cg_solver(stencil3d const* op, block_params const* BP, int n, double* x, double const* b, double tol, int maxIter, double* resNorm, int* numIter, int verbose) {
 	if (op->nx * op->ny * op->nz != n)
