@@ -44,6 +44,7 @@ private:
   std::string label_;
   double t_start_;
   static std::map<std::string, double> times_;
+  static std::map<std::string, double> squared_times_;
   static std::map<std::string, int> counts_;
 
 };
