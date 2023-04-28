@@ -36,7 +36,7 @@ void Timer::summarize(std::ostream& os)
   for (auto [label, time]: times_)
   {
     int count = counts_[label];
-    std::cout << std::setw(20) << label << "\t" << std::setw(10) << count << "\t" << std::setw(10) << time << "\t" << std::setw(10) << time/double(count) << std::endl;
+    std::cout << std::setw(40) << label << "\t" << std::setw(10) << count << "\t" << std::setw(10) << time << "\t" << std::setw(10) << time/double(count) << std::endl;
   }
   os << "============================================================================" << std::endl;
 }
