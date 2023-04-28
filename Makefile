@@ -25,7 +25,7 @@ MAIN_CG_OBJ=main_cg_poisson.o cg_solver.o operations.o timer.o
 MAIN_GMRES_OBJ=main_gmres_poisson.o gmres_solver.o operations.o timer.o 
 #BCMK_OBJ=main_benchmarks.o operations.o timer.o
  
-run_tests.x: run_tests.cpp ${TEST_SOURCES} gtest_mpi.o operations.o gmres_solver.o 
+run_tests.x: run_tests.cpp ${TEST_SOURCES} gtest_mpi.o operations.o gmres_solver.o cg_solver.o
 	${CXX} ${CXX_FLAGS} -DUSE_MPI -o run_tests.x $^
 
 main_cg_poisson.x: ${MAIN_CG_OBJ}
