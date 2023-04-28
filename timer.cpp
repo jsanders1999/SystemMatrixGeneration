@@ -15,6 +15,8 @@
 std::map<std::string, int> Timer::counts_;
 std::map<std::string, double> Timer::times_;
 std::map<std::string, double> Timer::squared_times_;
+std::map<std::string, double> Timer::max_time_;
+std::map<std::string, double> Timer::min_time_;
 
   Timer::Timer(std::string label)
   : label_(label)
@@ -26,8 +28,11 @@ std::map<std::string, double> Timer::squared_times_;
   Timer::~Timer()
   {
     double t_end = omp_get_wtime();
-    times_[label_] += t_end - t_start_;
-    squared_times_[label_] += (t_end - t_start_)*(t_end - t_start_);
+    double t_diff = t_end = t_start_
+    times_[label_] += t_diff;
+    squared_times_[label_] += (t_diff)*(t_diff);
+    max_time_[label_] = (t_diff<max_time_[label_])?t_diff:max_time_[label_];
+    min_time_[label_] = (t_diff>max_time_[label_])?t_diff:max_time_[label_];
     counts_[label_]++;
   }
 
@@ -35,6 +40,7 @@ void Timer::summarize(std::ostream& os)
 {
   //os << "==================== TIMER SUMMARY =========================================" << std::endl;
   os << "label,                                   \tcalls,     \ttotal time, \tmean time, \tstd time, "<<std::endl;
+  std::cout << std::setw(40) << "label" << ",\t" << std::setw(10) << "calls" << ",\t" << std::setw(10) << "total time" << ",\t" << std::setw(10) << "max time" <<"," << std::setw(10) << "mean time" << ",\t" << std::setw(10) << "min time" <<"," << std::setw(10) << "std time" <<"," << std::endl;
   //os << "----------------------------------------------" << std::endl;
 
   os << " " << std::endl;
@@ -42,7 +48,7 @@ void Timer::summarize(std::ostream& os)
   {
     int count = counts_[label];
     double sigma = sqrt(squared_times_[label]/count-time*time/double(count*count));
-    std::cout << std::setw(40) << label << ",\t" << std::setw(10) << count << ",\t" << std::setw(10) << time << ",\t" << std::setw(10) << time/double(count) << ",\t" << std::setw(10) << sigma <<"," << std::endl;
+    std::cout << std::setw(40) << label << ",\t" << std::setw(10) << count << ",\t" << std::setw(10) << time << ",\t" << std::setw(10) << max_time_[label] << std::setw(10) << time/double(count) << ",\t" << std::setw(10) << min_time_[label] << std::setw(10) << sigma <<"," << std::endl;
   }
   //os << "============================================================================" << std::endl;
 }
