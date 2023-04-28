@@ -138,8 +138,8 @@ TEST(gmres_solver, gmres_and_cg_comparison)
   cg_solver(&S, &BP, n, y, b, tol, maxIter, &resNorm, &numIter, 1);
 
   //z = x-y
-  axpby(1.0, x, 0.0, z);
-  axpby(-1.0, y, 1.0, z);
+  axpby(n,  1.0, x, 0.0, z);
+  axpby(n, -1.0, y, 1.0, z);
 
 
   double rel_err=std::sqrt(dot(n, z, z))/std::sqrt(dot(n, b, b));
