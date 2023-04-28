@@ -245,7 +245,7 @@ block_params create_blocks(int nx, int ny, int nz) {
 
 // apply given rotation
 void given_rotation(int k, double* h, double* cs, double* sn){
-  Timer timergivens("4. Givens rotation operation");
+  Timer timergivens("4. Givens rotation");
 
   double temp, t, cs_k, sn_k;
   for (int i=0; i<k; i++)
@@ -269,7 +269,7 @@ void given_rotation(int k, double* h, double* cs, double* sn){
 
 // Arnoldi function
 void arnoldi(int k, double* Q, double* h, stencil3d const* op, block_params const* BP) {
-  Timer timerArnoldi("5. Arnoldi operation");
+  Timer timerArnoldi("5. Arnoldi function");
   int n = op->nx * op->ny * op->nz;
   apply_stencil3d(op, BP, Q+k*n, Q+(k+1)*n);
 	
