@@ -131,7 +131,7 @@ int main(int argc, char* argv[])
   double resNorm, tol=std::sqrt(std::numeric_limits<double>::epsilon());
 
   try {
-  Timer t("gmres solver");
+  //Timer t("gmres solver");
   gmres_solver(&L, &BP, loc_n, x, b, tol, maxIter, &resNorm, &numIter, 1);
   } catch(std::exception e)
   {

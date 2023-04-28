@@ -122,7 +122,7 @@ int main(int argc, char* argv[]){
 	int numIter, maxIter=1000;
 	double resNorm, tol=std::sqrt(std::numeric_limits<double>::epsilon());
 
-	try {   Timer t("cg solver");
+	try {   //Timer t("cg solver");
 		cg_solver(&L, &BP, loc_n, x, b, tol, maxIter, &resNorm, &numIter, 1);
 	} catch(std::exception e) {
 		std::cerr << "Caught an exception in cg_solve: " << e.what() << std::endl;

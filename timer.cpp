@@ -31,7 +31,7 @@ std::map<std::string, double> Timer::times_;
 void Timer::summarize(std::ostream& os)
 {
   os << "==================== TIMER SUMMARY =========================================" << std::endl;
-  os << "label               \tcalls     \ttotal time\tmean time "<<std::endl;
+  os << "label                                   \tcalls     \ttotal time\tmean time "<<std::endl;
   os << "----------------------------------------------" << std::endl;
   for (auto [label, time]: times_)
   {
