@@ -88,7 +88,7 @@ void gmres_solver(stencil3d const* op, block_params const* BP, int n, double* x,
 
     beta[iter+1] = -sn[iter]*beta[iter];
     beta[iter] = cs[iter]*beta[iter];
-    error = std::abs( beta[iter+1] ) / b_norm;
+    error = std::abs( beta[iter+1] )/ b_norm;
 
   } // end of while-loop
 

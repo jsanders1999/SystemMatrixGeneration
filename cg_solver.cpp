@@ -19,6 +19,7 @@ void cg_solver(stencil3d const* op, block_params const* BP, int n, double* x, do
 	double *r = new double[n];
 
 	double alpha, beta, rho=1.0, rho_old=0.0;
+	double b_norm = std::sqrt(dot(n,b,b));
 
 	// r = b - op * x
 	apply_stencil3d(op, BP, x, r);
@@ -37,7 +38,7 @@ void cg_solver(stencil3d const* op, block_params const* BP, int n, double* x, do
 		if (verbose && rank==0 && iter%10==0){
 			std::cout << std::setw(4) << iter << "\t" << std::setw(8) << std::setprecision(4) << rho << std::endl;
 		}
-		if ((std::sqrt(rho) < tol) || (iter > maxIter)){
+		if ((std::sqrt(rho)/b_norm; < tol) || (iter > maxIter)){
 			break;
 		}
 		if (rho_old==0.0) {
