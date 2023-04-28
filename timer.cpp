@@ -14,6 +14,7 @@
 // will get linker errors (undefined reference)
 std::map<std::string, int> Timer::counts_;
 std::map<std::string, double> Timer::times_;
+std::map<std::string, double> Timer::squared_times_;
 
   Timer::Timer(std::string label)
   : label_(label)
