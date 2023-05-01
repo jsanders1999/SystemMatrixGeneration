@@ -44,6 +44,15 @@ void axpby(int const local_n, double const a, double const* x, double const b, d
 	return;
 }
 
+void axpby(int const local_n, double const a, double const* x, 
+	      double const b, double const* y, double const c, double* z){
+        Timer timeraxpby("2. axpby operation");
+	for (int id=0; id<local_n; id++) {
+		z[id] = a*x[id]+b*y[id]+c*z[id];
+	}
+	return;
+}
+
 // y = a*x+y
 void axpy(int const local_n, double const a, double const* x, double* y){
 	Timer timeraxpby("2. axpby operation");
@@ -276,7 +285,7 @@ void given_rotation(int const k, double* h, double* cs, double* sn){
   return;
 }
 
-// Arnoldi function
+// Arnoldi function (without preconditioning)
 void arnoldi(int const k, double* Q, double* h, stencil3d const* op, block_params const* BP) {
   Timer timerArnoldi("5. Arnoldi function");
   int n = op->nx * op->ny * op->nz;
@@ -296,3 +305,33 @@ void arnoldi(int const k, double* Q, double* h, stencil3d const* op, block_param
  return; 
 }
 
+// Arnoldi function (with polynomial preconditioning)
+void arnoldi(int const k, double* Q, double* h, stencil3d const* op, block_params const* BP, int verbose) {
+  Timer timerArnoldi("5. Arnoldi function");
+  int n = op->nx * op->ny * op->nz;
+  double *x1 = new double[n];
+  double *x2 = new double[n];
+
+  apply_stencil3d(op, BP, Q+k*n, x1);         // x1 = op * Q[:,k] 
+  apply_stencil3d(op, BP, x1, x2);            // x2 = x1 - op*x1
+  axpby(n, 1.0, x1, -1.0, x2);                // x2 = x1 - op*x1
+  apply_stencil3d(op, BP, x2, Q+(k+1)*n);     // x3 = x2 - op*x2
+  axpby(n, 1.0, x2, -1.0, Q+(k+1)*n);         // x3 = x2 - op*x2
+  axpby(n, 1.0, x1, 1.0, x2, 1.0, Q+(k+1)*n); // assemble: Q[:,k+1] = x1+x2+x3
+
+  //#pragma omp parallel for
+  for (int i=0; i<=k; i++)
+  {
+    h[i] = dot(n, Q+(k+1)*n, Q+i*n);
+    axpby(n, -h[i], Q+i*n, 1.0, Q+(k+1)*n);
+  }
+
+  h[k+1] = std::sqrt(dot(n, Q+(k+1)*n, Q+(k+1)*n));
+  for (int i=0; i<n; i++)
+    Q[(k+1)*n+i] = Q[(k+1)*n+i] / h[k+1];
+ 
+ delete [] x1;
+ delete [] x2;
+
+ return; 
+}
