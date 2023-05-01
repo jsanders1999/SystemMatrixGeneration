@@ -75,6 +75,7 @@ typedef struct block_params
 } block_params;
 
 void print_array(const double* arr, int size);
+
 //////////////////////////////////
 // Linear operator application  //
 //////////////////////////////////
@@ -85,12 +86,13 @@ void apply_stencil3d(stencil3d const* op, block_params const* bp, double const* 
 //////////////////////////////////
 // Blocking operator            //
 //////////////////////////////////
+
 block_params create_blocks(int nx, int ny, int nz);
 
 //////////////////////////////////
 // Vector operations            //
 //////////////////////////////////
-//
+
 // initialize a vector with a constant value, x[i] = value for 0<=i<n
 void init(int const n, double* x, double const value);
 
@@ -100,9 +102,22 @@ double dot(int const n, double const* x, double const* y);
 // vector update: compute y[i] = a*x[i] + b*y[i] for 0<=i<n
 void axpby(int const n, double a, double const* x, double b, double* y);
 
+// overload axpby: compute z[i] = a*x[i] + b*y[i] + c*z[i]
+void axpby(int const local_n, double const a, double const* x, 
+	      double const b, double const* y, double const c, double* z);
+
+
 //////////////////////////////////
-// GMRES operations             //
+//   GMRES  functions           //
 //////////////////////////////////
 
+// given rotation
 void given_rotation(int k, double* h, double* cs, double* sn);
+
+// arnoldi function (without preconditioning)
 void arnoldi(int k, double* Q, double* h, stencil3d const* op, block_params const* BP); 
+
+// arnoldi function (with polynomial preconditioning)
+void arnoldi(int k, double* Q, double* h, stencil3d const* op, block_params const* BP, int verbose);
+
+
