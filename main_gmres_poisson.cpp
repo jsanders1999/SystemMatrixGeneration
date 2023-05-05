@@ -102,25 +102,24 @@ int main(int argc, char* argv[])
      MPI_Barrier(MPI_COMM_WORLD);
   }
 
-  #ifdef USE_MPI_CART{
-  int dim[3] = {BP.bkx, BP.bky, BP.bkz }; //Dimensions of the cartesian grid
-  int periodical[3] = {0, 0, 0}; //Whether eacht dimention is periodic or not (not in our case)
-  int reorder = 0; // Whether MPI is allowed to reorder processes to speed up computation
-  MPI_Comm cart_comm; //new communicator to store the cartesian communicator
+  #ifdef USE_MPI_CART 
+  {
+   int dim[3] = {BP.bkx, BP.bky, BP.bkz }; //Dimensions of the cartesian grid
+   int periodical[3] = {0, 0, 0}; //Whether eacht dimention is periodic or not (not in our case)
+   int reorder = 0; // Whether MPI is allowed to reorder processes to speed up computation
+   MPI_Comm cart_comm; //new communicator to store the cartesian communicator
 
-  MPI_Cart_create(MPI_COMM_WORLD, 3, dim, periodical, reorder, &cart_comm); //Create the cartesian topolgy and store it in a new MPI communicator
-  MPI_Comm_rank(cart_comm, &rank); //get the rank into the new communicator
-  int coord[3]; //The catesian index of the current process
-  MPI_Cart_coords(cart_comm, rank, 3, coord);
-  
+   MPI_Cart_create(MPI_COMM_WORLD, 3, dim, periodical, reorder, &cart_comm); //Create the cartesian topolgy and store it in a new MPI communicator
+   MPI_Comm_rank(cart_comm, &rank); //get the rank into the new communicator
+   int coord[3]; //The catesian index of the current process
+   MPI_Cart_coords(cart_comm, rank, 3, coord);
+   
 
-  for (int p=0; p<size; p++){
-     if (rank==p)std::cout << "Processor " << p << " grid is ["<<BP.bx_sz << " x "<<BP.by_sz<<" x "<<BP.bz_sz << "]"<<std::endl;
-     if (rank==p)std::cout << "Processor " << p << " coordinates are ("<< coord[0] << ", "<< coord[1] <<", "<< coord[2] << ")"<<std::endl;
-     MPI_Barrier(MPI_COMM_WORLD);
-  }
-  }
-  #else {
+   for (int p=0; p<size; p++){
+      if (rank==p)std::cout << "Processor " << p << " grid is ["<<BP.bx_sz << " x "<<BP.by_sz<<" x "<<BP.bz_sz << "]"<<std::endl;
+      if (rank==p)std::cout << "Processor " << p << " coordinates are ("<< coord[0] << ", "<< coord[1] <<", "<< coord[2] << ")"<<std::endl;
+      MPI_Barrier(MPI_COMM_WORLD);
+   }
   }
   #endif
 
