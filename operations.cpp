@@ -90,12 +90,12 @@ void apply_stencil3d(stencil3d const* S, block_params const* BP, double const* u
 	MPI_Status statuses[12];
 	MPI_Comm comm = BP<-comm;
 	int west_rank, east_rank, south_rank, north_rank, bottom_rank, top_rank;
-	MPI_Cart_shift(cart_comm, 0, -1, &rank, &west_rank);
-	MPI_Cart_shift(cart_comm, 0, 1, &rank, &east_rank);
-	MPI_Cart_shift(cart_comm, 1, -1, &rank, &south_rank);
-	MPI_Cart_shift(cart_comm, 1, 1, &rank, &north_rank);
-	MPI_Cart_shift(cart_comm, 2, -1, &rank, &bottom_rank);
-	MPI_Cart_shift(cart_comm, 2, 1, &rank, &top_rank);
+	MPI_Cart_shift(comm, 0, -1, &rank, &west_rank);
+	MPI_Cart_shift(comm, 0, 1, &rank, &east_rank);
+	MPI_Cart_shift(comm, 1, -1, &rank, &south_rank);
+	MPI_Cart_shift(comm, 1, 1, &rank, &north_rank);
+	MPI_Cart_shift(comm, 2, -1, &rank, &bottom_rank);
+	MPI_Cart_shift(comm, 2, 1, &rank, &top_rank);
 	//west
 	if (west_rank != MPI_PROC_NULL) {
 		int id = 0;
