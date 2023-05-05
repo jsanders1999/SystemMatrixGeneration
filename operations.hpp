@@ -91,6 +91,8 @@ void apply_stencil3d(stencil3d const* op, block_params const* bp, double const* 
 
 block_params create_blocks(int nx, int ny, int nz);
 
+block_params create_blocks_cart(int nx, int ny, int nz);
+
 //////////////////////////////////
 // Vector operations            //
 //////////////////////////////////
