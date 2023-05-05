@@ -8,6 +8,8 @@
 
 #include <cmath>
 
+#define USE_MPI_CART
+
 // Main program that solves the 3D Poisson equation
 // on a unit cube. The grid size (nx,ny,nz) can be 
 // passed to the executable like this:
@@ -99,6 +101,26 @@ int main(int argc, char* argv[])
      if (rank==p)std::cout << "Processor " << p << " grid is ["<<BP.bx_sz << " x "<<BP.by_sz<<" x "<<BP.bz_sz << "]"<<std::endl;
      MPI_Barrier(MPI_COMM_WORLD);
   }
+
+  #ifdef USE_MPI_CART{
+  int dim[3] = {BP.bkx, BP.bky, BP.bkz }; //Dimensions of the cartesian grid
+  int periodical[3] = {0, 0, 0}; //Whether eacht dimention is periodic or not (not in our case)
+  int reorder = 1; // Whether MPI is allowed to reorder processes to speed up computation
+  int coord[3]; //The catesian index of the current process
+  MPI_Comm cart_comm; //new communicator to store the cartesian communicator
+
+  MPI_Cart_create(MPI_COMM_WORLD, 3, dim, periodical, reorder, &cart_comm);
+  MPI_Cart_coords(cart_comm, rank, 3, coord);
+
+  for (int p=0; p<size; p++){
+     if (rank==p)std::cout << "Processor " << p << " grid is ["<<BP.bx_sz << " x "<<BP.by_sz<<" x "<<BP.bz_sz << "]"<<std::endl;
+     if (rank==p)std::cout << "Processor " << p << " coordinates are ("<< coord[0] << ", "<< coord[1] <<", "<< coord[2] << ")"<<std::endl;
+     MPI_Barrier(MPI_COMM_WORLD);
+  }
+  }
+  #else {
+  }
+  #endif
 
   double dx=1.0/(nx-1), dy=1.0/(ny-1), dz=1.0/(nz-1);
 
