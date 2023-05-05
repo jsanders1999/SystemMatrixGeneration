@@ -72,6 +72,8 @@ typedef struct block_params
   int bx_sz, by_sz, bz_sz;
   // neighbour ranks
   int rank_e, rank_w, rank_n, rank_s, rank_b, rank_t;
+  // MPI communicator
+  MPI_Comm comm;
 } block_params;
 
 void print_array(const double* arr, int size);
