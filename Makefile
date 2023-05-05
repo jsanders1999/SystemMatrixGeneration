@@ -48,6 +48,7 @@ test: run_tests.x
 	mpirun -np 1 ./run_tests.x
 	mpirun -np 2 ./run_tests.x
 	mpirun -np 8 ./run_tests.x
+	mpirun -np 18 ./run_tests.x --mca orte_base_help_aggregate 0
 
 cg_solver: main_cg_poisson.x
 	mpirun -np 1 ./main_cg_poisson.x 64
