@@ -41,27 +41,27 @@ stencil3d laplace3d_stencil(int nx, int ny, int nz, double dx, double dy, double
   //if (nx<=2 || ny<=2 || nz<=2) throw std::runtime_error("need at least two grid points in each direction to implement boundary conditions.");
   stencil3d L;
   L.nx=nx; L.ny=ny; L.nz=nz;
+  
+  L.value_c =  2.0/(dx*dx) + 2.0/(dy*dy) + 2.0/(dz*dz);
+  L.value_n = -1.0/(dy*dy);
+  L.value_e = -1.0/(dx*dx) + 0.5/dx;
+  L.value_s = -1.0/(dy*dy);
+  L.value_w = -1.0/(dx*dx) - 0.5/dx;
+  L.value_t = -1.0/(dz*dz);
+  L.value_b = -1.0/(dz*dz);
+
   #ifdef USE_DIAG
   {
-    L.value_c = 1.0; 
-    L.value_n = (-1.0/(dy*dy)) / (2.0/(dx*dx) + 2.0/(dy*dy) + 2.0/(dz*dz));
-    L.value_e = (-1.0/(dx*dx) + 0.5/dx) / (2.0/(dx*dx) + 2.0/(dy*dy) + 2.0/(dz*dz)) ;
-    L.value_s = (-1.0/(dy*dy)) / (2.0/(dx*dx) + 2.0/(dy*dy) + 2.0/(dz*dz));
-    L.value_w = (-1.0/(dx*dx) - 0.5/dx) / (2.0/(dx*dx) + 2.0/(dy*dy) + 2.0/(dz*dz));
-    L.value_t = (-1.0/(dz*dz)) / (2.0/(dx*dx) + 2.0/(dy*dy) + 2.0/(dz*dz));
-    L.value_b = (-1.0/(dz*dz)) / (2.0/(dx*dx) + 2.0/(dy*dy) + 2.0/(dz*dz));
-  } 
-  #else
-  {
-    L.value_c =  2.0/(dx*dx) + 2.0/(dy*dy) + 2.0/(dz*dz);
-    L.value_n = -1.0/(dy*dy);
-    L.value_e = -1.0/(dx*dx) + 0.5/dx;
-    L.value_s = -1.0/(dy*dy);
-    L.value_w = -1.0/(dx*dx) - 0.5/dx;
-    L.value_t = -1.0/(dz*dz);
-    L.value_b = -1.0/(dz*dz);
+    L.value_n = L.value_n / L.value_c;
+    L.value_e = L.value_e / L.value_c;
+    L.value_s = L.value_s / L.value_c;
+    L.value_w = L.value_w / L.value_c;
+    L.value_t = L.value_t / L.value_c;
+    L.value_b = L.value_b / L.value_c;
+    L.value_c = 1.0;
   }
   #endif
+
   return L;
 }
 
@@ -142,20 +142,6 @@ int main(int argc, char* argv[])
   init(loc_n, b, 0.0);
 
   // initialize the rhs with f(x,y,z) in the interior of the domain
-  #ifdef USE_DIAG
-  {
-  for (int iz=0; iz<BP.bz_sz; iz++){
-     double z = (BP.bz_start+iz)*dz;
-     for (int iy=0; iy<BP.by_sz; iy++){
-	double y = (BP.by_start+iy)*dy;
-	for (int ix=0; ix<BP.bx_sz; ix++){
-	   double x = (BP.bx_start+ix)*dx;
-	   b[L.index_c(ix,iy,iz)] = f(x,y,z)/(2.0/(dx*dx) + 2.0/(dy*dy) + 2.0/(dz*dz));
-	}
-     }
-  }}
-  #else
-  {
   for (int iz=0; iz<BP.bz_sz; iz++){
      double z = (BP.bz_start+iz)*dz;
      for (int iy=0; iy<BP.by_sz; iy++){
@@ -165,29 +151,21 @@ int main(int argc, char* argv[])
 	   b[L.index_c(ix,iy,iz)] = f(x,y,z);
 	}
      }
-  }}
-  #endif
+  }
 
   // Dirichlet boundary conditions at z=0 (others are 0 in our case, initialized above)
-  #ifdef USE_DIAG
-  {
-  if (BP.bz_start==0) {
-     for (int iy=0; iy<BP.by_sz; iy++) {
-        for (int ix=0; ix<BP.bx_sz; ix++){
-       	   b[L.index_c(ix,iy,0)] -= L.value_b*g_0((BP.bx_start+ix)*dx, (BP.by_start+iy)*dy)/
-		                    (2.0/(dx*dx) + 2.0/(dy*dy) + 2.0/(dz*dz));
-	}
-     }
-  }}
-  #else
-  { 
   if (BP.bz_start==0) {
      for (int iy=0; iy<BP.by_sz; iy++) {
         for (int ix=0; ix<BP.bx_sz; ix++){
        	   b[L.index_c(ix,iy,0)] -= L.value_b*g_0((BP.bx_start+ix)*dx, (BP.by_start+iy)*dy);
 	}
      }
-  }}
+  }
+
+  #ifdef USE_DIAG
+  {
+     for (int i=0; i<loc_n; i++) b[i] = b[i] /( 2.0/(dx*dx) + 2.0/(dy*dy) + 2.0/(dz*dz) );   
+  }
   #endif
 
   // solve the linear system of equations using GMRES

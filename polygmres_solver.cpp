@@ -7,7 +7,7 @@
 #include <iostream>
 #include <iomanip>
 
-void polygmres_solver(stencil3d const* op, block_params const* BP, int n, double* x, double* b,
+void polygmres_solver(stencil3d* op, block_params const* BP, int n, double* x, double* b,
         double tol, int maxIter,
         double* resNorm, int* numIter,
         int verbose)
@@ -35,22 +35,32 @@ void polygmres_solver(stencil3d const* op, block_params const* BP, int n, double
   double r_norm;               // residual norm
   double b_norm;               // right hand side b norm
 
-  // preconditioning right hand side b
-  apply_stencil3d(op, BP, b, x1);     // x1 = op * b
-  apply_stencil3d(op, BP, x1, x2);    // x2 = x1 - op*x1
-  axpby(n, 1.0, x1, -1.0, x2);        // x2 = x1 - op*x1
-  apply_stencil3d(op, BP, x2, b);     // x3 = x2 - op*x2
-  axpby(n, 1.0, x2, -1.0, b);         // x3 = x2 - op*x2
-  axpby(n, 1.0, x1, 1.0, x2, 1.0, b); // assemble: b = x1+x2+x3
+  // before applying the polynomial preconditioner, we first use
+  // Jacobi preconditioner to scale the input stencil.Because the 
+  // polynomial preconditioner only works well when the geometric 
+  // series converges, which is not the case for our original 
+  // input matrix.
+  for (int i=0; i<n; i++) b[i] = b[i]/op->value_c;
+  op->value_n = op->value_n / op->value_c;   
+  op->value_e = op->value_e / op->value_c;   
+  op->value_s = op->value_s / op->value_c;   
+  op->value_w = op->value_w / op->value_c;   
+  op->value_t = op->value_t / op->value_c;   
+  op->value_b = op->value_b / op->value_c;   
+  op->value_c = 1.0;
+
+  // polynomial preconditioning for right hand side b
+  // here we expand I+(I-A)+(I-A)^2=3I-3A+A^2
+  apply_stencil3d(op, BP, b, x1);
+  apply_stencil3d(op, BP,x1, x2);
+  axpby(n, -3.0, x1, 1.0, x2, 3.0, b);
 
   // r=b-A*x
-  apply_stencil3d(op, BP, x, x1);     // x1 = op * x
-  apply_stencil3d(op, BP, x1, x2);    // x2 = x1 - op*x1
-  axpby(n, 1.0, x1, -1.0, x2);        // x2 = x1 - op*x1
-  apply_stencil3d(op, BP, x2, r);     // x3 = x2 - op*x2
-  axpby(n, 1.0, x2, -1.0, r);         // x3 = x2 - op*x2
-  axpby(n, 1.0, x1, 1.0, x2, 1.0, r); // assemble: r = x1+x2+x3
-  axpby(n, 1.0, b, -1.0, r);          // r = b - op*r
+  apply_stencil3d(op, BP, x, r);
+  apply_stencil3d(op, BP, r, x1);
+  apply_stencil3d(op, BP,x1, x2);
+  axpby(n, -3.0, x1, 1.0, x2, 3.0, r);
+  axpby(n, 1.0, b, -1.0, r);
 
   // compute the error
   r_norm = std::sqrt(dot(n,r,r));
