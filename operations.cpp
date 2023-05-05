@@ -88,7 +88,7 @@ void apply_stencil3d(stencil3d const* S, block_params const* BP, double const* u
 	//If we have neighbour in a direction, we communicate the bdry points both ways, otherwise we set the recv_buffer to zero.
 	MPI_Request requests[12];
 	MPI_Status statuses[12];
-	MPI_Comm comm = BP->comm;
+	MPI_Comm comm = BP.comm;
 	int west_rank, east_rank, south_rank, north_rank, bottom_rank, top_rank;
 	MPI_Cart_shift(comm, 0, -1, &rank, &west_rank);
 	MPI_Cart_shift(comm, 0, 1, &rank, &east_rank);
