@@ -473,10 +473,10 @@ block_params create_blocks_cart(int const nx, int const ny, int const nz) {
 	// Save rank of neighbours
 	MPI_Cart_shift(cart_comm, 0, -1, &rank, &BP.rank_w);
 	MPI_Cart_shift(cart_comm, 0, 1, &rank, &BP.rank_e);
-	MPI_Cart_shift(cart_comm, 1, -1, &rank, &BP.rank_sk);
-	MPI_Cart_shift(cart_comm, 1, 1, &rank, BP.rank_n);
-	MPI_Cart_shift(cart_comm, 2, -1, &rank, BP.rank_b);
-	MPI_Cart_shift(cart_comm, 2, 1, &rank, BP.rank_t;
+	MPI_Cart_shift(cart_comm, 1, -1, &rank, &BP.rank_s);
+	MPI_Cart_shift(cart_comm, 1, 1, &rank, &BP.rank_n);
+	MPI_Cart_shift(cart_comm, 2, -1, &rank, &BP.rank_b);
+	MPI_Cart_shift(cart_comm, 2, 1, &rank, &BP.rank_t);
 	BP.comm = cart_comm;
 	return BP;
 }
