@@ -438,6 +438,10 @@ block_params create_blocks_cart(int const nx, int const ny, int const nz) {
 	MPI_Comm_rank(cart_comm, &rank); //get the rank into the new communicator
 	int coord[3]; //The catesian index of the current process
 	MPI_Cart_coords(cart_comm, rank, 3, coord);
+	for (int p=0; p<size; p++){
+      if (rank==p)std::cout << "Processor " << p << " coordinates are ("<< coord[0] << ", "<< coord[1] <<", "<< coord[2] << ")"<<std::endl;
+      MPI_Barrier(MPI_COMM_WORLD);
+	}
 
 	// Calculate the sizes (ignoring divisibility)
 	BP.bx_sz = (nx + BP.bkx - 1) / BP.bkx;
