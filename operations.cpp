@@ -312,12 +312,10 @@ void arnoldi(int const k, double* Q, double* h, stencil3d const* op, block_param
   double *x1 = new double[n];
   double *x2 = new double[n];
 
-  apply_stencil3d(op, BP, Q+k*n, x1);         // x1 = op * Q[:,k] 
-  apply_stencil3d(op, BP, x1, x2);            // x2 = x1 - op*x1
-  axpby(n, 1.0, x1, -1.0, x2);                // x2 = x1 - op*x1
-  apply_stencil3d(op, BP, x2, Q+(k+1)*n);     // x3 = x2 - op*x2
-  axpby(n, 1.0, x2, -1.0, Q+(k+1)*n);         // x3 = x2 - op*x2
-  axpby(n, 1.0, x1, 1.0, x2, 1.0, Q+(k+1)*n); // assemble: Q[:,k+1] = x1+x2+x3
+  apply_stencil3d(op, BP, Q+k*n, Q+(k+1)*n);
+  apply_stencil3d(op, BP, Q+(k+1)*n, x1);
+  apply_stencil3d(op, BP,x1, x2);
+  axpby(n, -3.0, x1, 1.0, x2, 3.0, Q+(k+1)*n);
 
   //#pragma omp parallel for
   for (int i=0; i<=k; i++)
