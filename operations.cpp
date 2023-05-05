@@ -279,7 +279,7 @@ block_params create_blocks_cart(int const nx, int const ny, int const nz) {
 
 	int dim[3] = {BP.bkx, BP.bky, BP.bkz }; //Dimensions of the cartesian grid
 	int periodical[3] = {0, 0, 0}; //Whether eacht dimention is periodic or not (not in our case)
-	int reorder = 0; // Whether MPI is allowed to reorder processes to speed up computation
+	int reorder = 1; // Whether MPI is allowed to reorder processes to speed up computation
 	MPI_Comm cart_comm; //new communicator to store the cartesian communicator
 
 	MPI_Cart_create(MPI_COMM_WORLD, 3, dim, periodical, reorder, &cart_comm); //Create the cartesian topolgy and store it in a new MPI communicator
