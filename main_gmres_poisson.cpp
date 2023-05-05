@@ -108,7 +108,7 @@ int main(int argc, char* argv[])
    int periodical[3] = {0, 0, 0}; //Whether eacht dimention is periodic or not (not in our case)
    int reorder = 0; // Whether MPI is allowed to reorder processes to speed up computation
    MPI_Comm cart_comm; //new communicator to store the cartesian communicator
-   BP<-comm = cart_comm;
+   BP->comm = cart_comm;
 
    MPI_Cart_create(MPI_COMM_WORLD, 3, dim, periodical, reorder, &cart_comm); //Create the cartesian topolgy and store it in a new MPI communicator
    MPI_Comm_rank(cart_comm, &rank); //get the rank into the new communicator
