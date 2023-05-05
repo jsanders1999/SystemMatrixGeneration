@@ -84,7 +84,7 @@ void apply_stencil3d(stencil3d const* S, block_params const* BP, double const* u
 	//If we have neighbour in a direction, we communicate the bdry points both ways, otherwise we set the recv_buffer to zero.
 	MPI_Request requests[12];
 	MPI_Status statuses[12];
-	MPI_Comm comm = BP->comm;//MPI_COMM_WORLD;
+	MPI_Comm comm = MPI_COMM_WORLD;//BP->comm; gives a segmentation fault for some reason? @elias help
 	//west
 	if (BP->rank_w != MPI_PROC_NULL) {
 		int id = 0;
