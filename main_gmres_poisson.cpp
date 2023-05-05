@@ -111,7 +111,7 @@ int main(int argc, char* argv[])
   MPI_Cart_create(MPI_COMM_WORLD, 3, dim, periodical, reorder, &cart_comm); //Create the cartesian topolgy and store it in a new MPI communicator
   MPI_Comm_rank(cart_comm, &rank); //get the rank into the new communicator
   int coord[3]; //The catesian index of the current process
-  MPI_Cart_coords(cart_comm, &rank, 3, &coord);
+  MPI_Cart_coords(cart_comm, rank, 3, coord);
   
 
   for (int p=0; p<size; p++){
