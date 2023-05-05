@@ -87,10 +87,11 @@ int main(int argc, char* argv[])
  // int n=nx*ny*nz;
 
   // create the domain decomposition
+  block_params BP;
   #ifdef USE_MPI_CART 
-  {block_params BP = create_blocks_cart(nx,ny,nz);}
+  {BP = create_blocks_cart(nx,ny,nz);}
   #else 
-  {block_params BP = create_blocks(nx,ny,nz);}
+  {BP = create_blocks(nx,ny,nz);}
   #endif
 
   if (rank==0)
