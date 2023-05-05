@@ -1,6 +1,5 @@
 #include "timer.hpp"
 #include "operations.hpp"
-#include "cartesian_stencil.hpp"
 #include "gmres_solver.hpp"
 
 #include <cmath>
