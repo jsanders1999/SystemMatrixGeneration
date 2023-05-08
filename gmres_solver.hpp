@@ -14,4 +14,4 @@ void gmres_solver(stencil3d const* op, block_params const* BP, int n, double* x,
 void polygmres_solver(stencil3d* op, block_params const* BP, int n, double* x, double* b,
         double  tol,     int  maxIter,
         double* resNorm, int* numIter,
-        int verbose=1);
+        int order, int verbose=1);

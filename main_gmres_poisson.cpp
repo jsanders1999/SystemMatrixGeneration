@@ -169,7 +169,7 @@ int main(int argc, char* argv[])
   try {
   //Timer t("gmres solver");
   #ifdef USE_POLY
-     polygmres_solver(&L, &BP, loc_n, x, b, tol, maxIter, &resNorm, &numIter, 1);
+     polygmres_solver(&L, &BP, loc_n, x, b, tol, maxIter, &resNorm, &numIter, 2, 1);
   #else
      gmres_solver(&L, &BP, loc_n, x, b, tol, maxIter, &resNorm, &numIter, 1);
   #endif
