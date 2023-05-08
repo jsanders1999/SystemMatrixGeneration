@@ -72,6 +72,19 @@ typedef struct block_params
   int bx_sz, by_sz, bz_sz;
   // neighbour ranks
   int rank_e, rank_w, rank_n, rank_s, rank_b, rank_t;
+	// buffers to store border points
+	double* send_west_buffer;
+	double* recv_west_buffer; 
+	double* send_east_buffer;  
+	double* recv_east_buffer;  
+	double* send_south_buffer;    
+	double* recv_south_buffer;    
+	double* send_north_buffer;    
+	double* recv_north_buffer;    
+	double* send_bot_buffer;   
+	double* recv_bot_buffer;  
+	double* send_top_buffer; 
+	double* recv_top_buffer; 
   // MPI communicator
   MPI_Comm comm;
 } block_params;
