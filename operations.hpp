@@ -72,6 +72,8 @@ typedef struct block_params
   int bx_sz, by_sz, bz_sz;
   // neighbour ranks
   int rank_e, rank_w, rank_n, rank_s, rank_b, rank_t;
+  // MPI communicator
+  MPI_Comm comm;
 } block_params;
 
 void print_array(const double* arr, int size);
@@ -88,6 +90,8 @@ void apply_stencil3d(stencil3d const* op, block_params const* bp, double const* 
 //////////////////////////////////
 
 block_params create_blocks(int nx, int ny, int nz);
+
+block_params create_blocks_cart(int nx, int ny, int nz);
 
 //////////////////////////////////
 // Vector operations            //

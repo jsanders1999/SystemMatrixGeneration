@@ -84,7 +84,7 @@ void apply_stencil3d(stencil3d const* S, block_params const* BP, double const* u
 	//If we have neighbour in a direction, we communicate the bdry points both ways, otherwise we set the recv_buffer to zero.
 	MPI_Request requests[12];
 	MPI_Status statuses[12];
-	MPI_Comm comm = MPI_COMM_WORLD;
+	MPI_Comm comm = MPI_COMM_WORLD;//BP->comm; gives a segmentation fault for some reason? @elias help
 	//west
 	if (BP->rank_w != MPI_PROC_NULL) {
 		int id = 0;
@@ -259,6 +259,82 @@ block_params create_blocks(int const nx, int const ny, int const nz) {
 	BP.rank_t = BP.bz_idx < BP.bkz - 1 ? rank + BP.bkx * BP.bky : MPI_PROC_NULL; //top
 	return BP;
 }
+
+block_params create_blocks_cart(int const nx, int const ny, int const nz) {
+	//Timer timerblock("4. Block creation operation");
+	int rank, size;
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+	block_params BP;
+	// Choose number of blocks in x y and z directions
+	BP.bkx = ceil(pow(size, 1.0/3.0));
+	BP.bky = ceil(sqrt(size/BP.bkx));
+	BP.bkz = ceil(size / (BP.bkx * BP.bky));
+
+	if (rank==0 && size!=BP.bkx*BP.bky*BP.bkz) {
+		printf("ERROR: Invalid number of MPI processes (%d), can't create blocks. Try using %d instead.\n", size, BP.bkx*BP.bky*BP.bkz);
+		exit(1);
+	}
+
+	int dim[3] = {BP.bkx, BP.bky, BP.bkz }; //Dimensions of the cartesian grid
+	int periodical[3] = {0, 0, 0}; //Whether eacht dimention is periodic or not (not in our case)
+	int reorder = 1; // Whether MPI is allowed to reorder processes to speed up computation
+	MPI_Comm cart_comm; //new communicator to store the cartesian communicator
+
+	MPI_Cart_create(MPI_COMM_WORLD, 3, dim, periodical, reorder, &cart_comm); //Create the cartesian topolgy and store it in a new MPI communicator
+	MPI_Comm_rank(cart_comm, &rank); //get the rank into the new communicator
+	int coord[3]; //The catesian index of the current process
+	MPI_Cart_coords(cart_comm, rank, 3, coord);
+	for (int p=0; p<size; p++){
+      if (rank==p)std::cout << "Processor " << p << " coordinates are ("<< coord[0] << ", "<< coord[1] <<", "<< coord[2] << ")"<<std::endl;
+      MPI_Barrier(MPI_COMM_WORLD);
+	}
+
+	// Calculate the sizes (ignoring divisibility)
+	BP.bx_sz = (nx + BP.bkx - 1) / BP.bkx;
+	BP.by_sz = (ny + BP.bky - 1) / BP.bky;
+	BP.bz_sz = (nz + BP.bkz - 1) / BP.bkz;
+	// Calculate index in each direction
+	BP.bx_idx = rank % BP.bkx;
+	BP.by_idx = (rank / BP.bkx) % BP.bky;
+	BP.bz_idx = rank / (BP.bkx * BP.bky);
+	// Save start index (gridpoint) in x y and z directions
+	BP.bx_start = BP.bx_idx*BP.bx_sz;
+	BP.by_start = BP.by_idx*BP.by_sz;
+	BP.bz_start = BP.bz_idx*BP.bz_sz;
+	// Grid points are often not perfectly divisible into blocks, we handle that here.
+	// x-direction
+	int xb_start = BP.bx_idx * BP.bx_sz;
+	int xb_end = xb_start + BP.bx_sz - 1;
+	if (xb_end >= nx) {
+		BP.bx_sz = nx - xb_start;
+	}
+	// y-direction
+	int yb_start = BP.by_idx * BP.by_sz;
+	int yb_end = yb_start + BP.by_sz - 1;
+	if (yb_end >= ny) {
+		BP.by_sz = ny - yb_start;
+	}
+	// z-direction
+	int zb_start = BP.bz_idx * BP.bz_sz;
+	int zb_end = zb_start + BP.bz_sz - 1;
+	if (zb_end >= nz) {
+		BP.bz_sz = nz - zb_start;
+	}
+	// Save rank of neighbours
+	MPI_Cart_shift(cart_comm, 0, -1, &rank, &BP.rank_w);
+	MPI_Cart_shift(cart_comm, 0, 1, &rank, &BP.rank_e);
+	MPI_Cart_shift(cart_comm, 1, -1, &rank, &BP.rank_s);
+	MPI_Cart_shift(cart_comm, 1, 1, &rank, &BP.rank_n);
+	MPI_Cart_shift(cart_comm, 2, -1, &rank, &BP.rank_b);
+	MPI_Cart_shift(cart_comm, 2, 1, &rank, &BP.rank_t);
+	BP.comm = cart_comm;
+	return BP;
+}
+
+
+
 
 
 // apply given rotation

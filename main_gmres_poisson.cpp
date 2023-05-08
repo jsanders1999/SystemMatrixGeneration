@@ -8,6 +8,8 @@
 
 #include <cmath>
 
+#define USE_MPI_CART
+
 // Main program that solves the 3D Poisson equation
 // on a unit cube. The grid size (nx,ny,nz) can be 
 // passed to the executable like this:
@@ -85,7 +87,12 @@ int main(int argc, char* argv[])
  // int n=nx*ny*nz;
 
   // create the domain decomposition
-  block_params BP = create_blocks(nx,ny,nz);
+  block_params BP;
+  #ifdef USE_MPI_CART 
+  {BP = create_blocks_cart(nx,ny,nz);}
+  #else 
+  {BP = create_blocks(nx,ny,nz);}
+  #endif
 
   if (rank==0)
   { 
@@ -99,6 +106,15 @@ int main(int argc, char* argv[])
      if (rank==p)std::cout << "Processor " << p << " grid is ["<<BP.bx_sz << " x "<<BP.by_sz<<" x "<<BP.bz_sz << "]"<<std::endl;
      MPI_Barrier(MPI_COMM_WORLD);
   }
+
+//  #ifdef USE_MPI_CART 
+//  {
+//   for (int p=0; p<size; p++){
+//      if (rank==p)std::cout << "Processor " << p << " coordinates are ("<< coord[0] << ", "<< coord[1] <<", "<< coord[2] << ")"<<std::endl;
+//      MPI_Barrier(MPI_COMM_WORLD);
+//   }
+//  }
+//  #endif
 
   double dx=1.0/(nx-1), dy=1.0/(ny-1), dz=1.0/(nz-1);
 
