@@ -334,8 +334,21 @@ block_params create_blocks_cart(int const nx, int const ny, int const nz) {
 }
 
 
+// polynomial preconditioning
+void polynomial(stencil3d* op, block_params const* BP, double* x, double* t1, double* t2, int n, int order)
+{
+  // initialization
+  apply_stencil3d(op, BP, x, t1);
+  axpby(n, 1.0, x, -1.0, t1);  
+  axpby(n, 1.0, t1, 1.0, x);
 
-
+  for (int i=1; i<order; i++)
+  {
+     apply_stencil3d(op, BP, t1, t2);
+     axpby(n, -1.0, t2, 1.0, t1); 
+     axpby(n, 1.0, t1, 1.0, x);
+  }
+}
 
 // apply given rotation
 void given_rotation(int const k, double* h, double* cs, double* sn){
@@ -382,17 +395,15 @@ void arnoldi(int const k, double* Q, double* h, stencil3d const* op, block_param
 }
 
 // Arnoldi function (with polynomial preconditioning)
-void arnoldi(int const k, double* Q, double* h, stencil3d const* op, block_params const* BP, int verbose) {
+void arnoldi(int const k, double* Q, double* h, stencil3d* op, block_params const* BP, int order) {
   Timer timerArnoldi("5. Arnoldi function");
   int n = op->nx * op->ny * op->nz;
   double *x1 = new double[n];
   double *x2 = new double[n];
 
   apply_stencil3d(op, BP, Q+k*n, Q+(k+1)*n);
-  apply_stencil3d(op, BP, Q+(k+1)*n, x1);
-  apply_stencil3d(op, BP,x1, x2);
-  axpby(n, -3.0, x1, 1.0, x2, 3.0, Q+(k+1)*n);
-
+  polynomial(op, BP, Q+(k+1)*n, x1, x2, n, order);
+  
   //#pragma omp parallel for
   for (int i=0; i<=k; i++)
   {
@@ -409,3 +420,6 @@ void arnoldi(int const k, double* Q, double* h, stencil3d const* op, block_param
 
  return; 
 }
+
+
+

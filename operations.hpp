@@ -122,6 +122,7 @@ void given_rotation(int k, double* h, double* cs, double* sn);
 void arnoldi(int k, double* Q, double* h, stencil3d const* op, block_params const* BP); 
 
 // arnoldi function (with polynomial preconditioning)
-void arnoldi(int k, double* Q, double* h, stencil3d const* op, block_params const* BP, int verbose);
+void arnoldi(int k, double* Q, double* h, stencil3d* op, block_params const* BP, int order);
 
-
+// preconditioning
+void polynomial(stencil3d* op, block_params const* BP, double* x, double* t1, double* t2, int n, int order);
