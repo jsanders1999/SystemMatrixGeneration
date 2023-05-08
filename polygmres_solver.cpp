@@ -10,7 +10,7 @@
 void polygmres_solver(stencil3d* op, block_params const* BP, int n, double* x, double* b,
         double tol, int maxIter,
         double* resNorm, int* numIter,
-        int verbose)
+        int order, int verbose)
 {
   if (op->nx * op->ny * op->nz != n)
   {
@@ -51,16 +51,23 @@ void polygmres_solver(stencil3d* op, block_params const* BP, int n, double* x, d
 
   // polynomial preconditioning for right hand side b
   // here we expand I+(I-A)+(I-A)^2=3I-3A+A^2
-  apply_stencil3d(op, BP, b, x1);
-  apply_stencil3d(op, BP,x1, x2);
-  axpby(n, -3.0, x1, 1.0, x2, 3.0, b);
+  
+  //apply_stencil3d(op, BP, b, x1);
+  //apply_stencil3d(op, BP,x1, x2);
+  //axpby(n, -3.0, x1, 1.0, x2, 3.0, b);
+  
+
 
   // r=b-A*x
+  //apply_stencil3d(op, BP, x, r);
+  //apply_stencil3d(op, BP, r, x1);
+  //apply_stencil3d(op, BP,x1, x2);
+  //axpby(n, -3.0, x1, 1.0, x2, 3.0, r);
+  //axpby(n, 1.0, b, -1.0, r);
   apply_stencil3d(op, BP, x, r);
-  apply_stencil3d(op, BP, r, x1);
-  apply_stencil3d(op, BP,x1, x2);
-  axpby(n, -3.0, x1, 1.0, x2, 3.0, r);
   axpby(n, 1.0, b, -1.0, r);
+  polynomial(op, BP, r, x1, x2, n, order);
+
 
   // compute the error
   r_norm = std::sqrt(dot(n,r,r));
@@ -108,7 +115,7 @@ void polygmres_solver(stencil3d* op, block_params const* BP, int n, double* x, d
       break;
     }
 
-    arnoldi(iter, Q, H + iter*(iter+1)/2+iter, op, BP, 1);          // operation: Arnoldi process 
+    arnoldi(iter, Q, H + iter*(iter+1)/2+iter, op, BP, order);          // operation: Arnoldi process 
 
     given_rotation(iter, H + iter*(iter+1)/2+iter, cs, sn);  // operation: Given rotation
 
@@ -117,6 +124,8 @@ void polygmres_solver(stencil3d* op, block_params const* BP, int n, double* x, d
     error = std::abs( beta[iter+1] )/ b_norm;
 
   } // end of while-loop
+
+  std::cout << std::setw(4) << iter << "\t" << std::setw(8) << std::setprecision(4) << error << std::endl;
 
   // backward substitution
   double* y = new double[iter];
