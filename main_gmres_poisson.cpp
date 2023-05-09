@@ -88,44 +88,24 @@ int main(int argc, char* argv[])
 
   // create the domain decomposition
   block_params BP;
-  #ifdef USE_MPI_CART 
-  {BP = create_blocks_cart(nx,ny,nz);}
-  #else 
-  {BP = create_blocks(nx,ny,nz);}
-  #endif
+  BP = create_blocks(nx,ny,nz);
 
   if (rank==0)
   { 
-     std::cout << "Domain decomposition:"<<std::endl; 
-     std::cout << "Grid is           ["<<nx << " x "<< ny << " x " << nz << "]"<<std::endl;
-     std::cout << "Processor grid is ["<<BP.bx_sz << " x "<<BP.by_sz<<" x "<<BP.bz_sz << "]"<<std::endl;
+     std::cout << "Grid is ["<<nx << " x "<< ny << " x " << nz << "] and we have " << size << " processes." << std::endl;
   }
 
   //ordered printing for nicer output
-  for (int p=0; p<size; p++){
+  /*for (int p=0; p<size; p++){
      if (rank==p)std::cout << "Processor " << p << " grid is ["<<BP.bx_sz << " x "<<BP.by_sz<<" x "<<BP.bz_sz << "]"<<std::endl;
      MPI_Barrier(MPI_COMM_WORLD);
-  }
-
-//  #ifdef USE_MPI_CART 
-//  {
-//   for (int p=0; p<size; p++){
-//      if (rank==p)std::cout << "Processor " << p << " coordinates are ("<< coord[0] << ", "<< coord[1] <<", "<< coord[2] << ")"<<std::endl;
-//      MPI_Barrier(MPI_COMM_WORLD);
-//   }
-//  }
-//  #endif
+  }*/
 
   double dx=1.0/(nx-1), dy=1.0/(ny-1), dz=1.0/(nz-1);
 
   // Laplace operator
   stencil3d L = laplace3d_stencil(BP.bx_sz, BP.by_sz, BP.bz_sz, dx, dy, dz);
   
-  // The stencil needs to take the block_params object along
-  // so that the offsets and neighbors can be determined
-  // inside the apply function
-  //L.BP=BP; //TODO should we do this instead?
-
   long loc_n = BP.bx_sz*BP.by_sz*BP.bz_sz;
   // solution vector: start with a 0 vector
   double *x = new double[loc_n];
