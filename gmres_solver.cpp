@@ -71,7 +71,7 @@ void gmres_solver(stencil3d const* op, block_params const* BP, int n, double* x,
   { Timer timerGMRES("Full GMRES iteration");
     iter++;
 
-    if (verbose && rank==0 && iter%10==0)
+    if (verbose && rank==0 && iter%50==0)
     {
       std::cout << std::setw(4) << iter << "\t" << std::setw(8) << std::setprecision(4) << error << std::endl;
     }
@@ -91,8 +91,8 @@ void gmres_solver(stencil3d const* op, block_params const* BP, int n, double* x,
     error = std::abs( beta[iter+1] )/ b_norm;
 
   } // end of while-loop
- 
-  std::cout << std::setw(4) << iter << "\t" << std::setw(8) << std::setprecision(4) << error << std::endl;   
+ 	if (verbose && rank==0)
+		std::cout << std::setw(4) << iter << "\t" << std::setw(8) << std::setprecision(4) << error << std::endl;   
 
   // backward substitution
   double* y = new double[iter];
