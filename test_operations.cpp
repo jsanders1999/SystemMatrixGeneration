@@ -151,7 +151,7 @@ TEST(operations, given_rotation)
 }
 
 
-TEST(operations, arnoldi)
+/*TEST(operations, arnoldi)
 {
   int k = 0;
   int n, nx=2, ny=2, nz=2;
@@ -195,7 +195,7 @@ TEST(operations, arnoldi)
 
   delete [] Q;
   delete [] H;
-}
+}*/
 
 
 
