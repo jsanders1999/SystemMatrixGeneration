@@ -2,8 +2,16 @@
 #module load 2022r2
 #module load openmpi
 
+# possible values, write STENCIL=MPI_CART, STENCIL=GLOBAL_COMM, STENCIL=ONE_SIDED
+#
+STENCIL_VERSION := $(STENCIL)
+ifeq ($(strip $(STENCIL_VERSION)),)
+	STENCIL_VERSION = GLOBAL_COMM
+endif
+
+
 CXX=mpic++
-CXX_FLAGS=-O2 -g -fopenmp -lm -std=c++17
+CXX_FLAGS=-O2 -g -fopenmp -std=c++17 -DSTENCIL_$(STENCIL_VERSION)
 #CXX_FLAGS=-O3 -march=native -g -fopenmp -std=c++17
 DEFS=-DUSE_POLY
 
@@ -45,11 +53,9 @@ main_diagg_poisson.x: ${MAIN_DIAGG_OBJ}
 	${CXX} ${CXX_FLAGS} -DUSE_DIAG -o main_diagg_poisson.x $^
 
 test: run_tests.x
-	mpirun -np 1 ./run_tests.x
-	mpirun -np 2 ./run_tests.x
-	mpirun -np 8 ./run_tests.x
-#	mpirun -np 18 ./run_tests.x 
-#--mca orte_base_help_aggregate 0
+	mpirun -np 1  ./run_tests.x
+	mpirun -np 8  ./run_tests.x --mca orte_base_help_aggregate 0
+	mpirun -np 18 ./run_tests.x --mca orte_base_help_aggregate 0
 
 cg_solver: main_cg_poisson.x
 	mpirun -np 1 ./main_cg_poisson.x 64

@@ -85,6 +85,8 @@ typedef struct block_params
 	double* recv_bot_buffer;  
 	double* send_top_buffer; 
 	double* recv_top_buffer; 
+	//MPI windows
+	MPI_Win win_e, win_w, win_n, win_s, win_t, win_b;
   // MPI communicator
   MPI_Comm comm;
 } block_params;

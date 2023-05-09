@@ -63,28 +63,17 @@ void axpy(int const local_n, double const a, double const* x, double* y){
 }
 
 void apply_stencil3d(stencil3d const* S, block_params const* BP, double const* u, double* v) {
-	Timer timerstencil("3. Stencil operation");
-	
-	//TODO will these fit on the stack for our grid sizes? 
-	/*double BP->send_west_buffer[BP->by_sz*BP->bz_sz];
-	double BP->recv_west_buffer[BP->by_sz*BP->bz_sz]; 
-	double BP->send_east_buffer[BP->by_sz*BP->bz_sz];  
-	double BP->recv_east_buffer[BP->by_sz*BP->bz_sz];  
-	
-	double BP->send_south_buffer[BP->bx_sz*BP->bz_sz];    
-	double BP->recv_south_buffer[BP->bx_sz*BP->bz_sz];    
-	double BP->send_north_buffer[BP->bx_sz*BP->bz_sz];    
-	double BP->recv_north_buffer[BP->bx_sz*BP->bz_sz];    
-	
-	double BP->send_bot_buffer[BP->bx_sz*BP->by_sz];   
-	double BP->recv_bot_buffer[BP->bx_sz*BP->by_sz];  
-	double BP->send_top_buffer[BP->bx_sz*BP->by_sz]; 
-	double BP->recv_top_buffer[BP->bx_sz*BP->by_sz]; */
-	
-	//If we have neighbour in a direction, we communicate the bdry points both ways, otherwise we set the BP->recv_buffer to zero.
-	MPI_Request requests[12];
-	MPI_Status statuses[12];
-	MPI_Comm comm = MPI_COMM_WORLD;//BP->comm; gives a segmentation fault for some reason? @elias help
+#if defined(STENCIL_ONE_SIDED)
+	Timer t("apply_stencil3d one sided");
+#elif defined(STENCIL_GLOBAL_COMM)
+	Timer t("apply_stencil3d global comm");
+#elif defined(STENCIL_MPI_CART)
+	Timer t("apply_stencil3d mpi cart");
+#endif
+	int sz_ew = BP->by_sz*BP->bz_sz;
+	int sz_ns = BP->bx_sz*BP->bz_sz;
+	int sz_tb = BP->bx_sz*BP->by_sz;
+
 	//west
 	if (BP->rank_w != MPI_PROC_NULL) {
 		int id = 0;
@@ -93,8 +82,6 @@ void apply_stencil3d(stencil3d const* S, block_params const* BP, double const* u
 				BP->send_west_buffer[id] = u[S->index_c(0, iy, iz)];
 			}
 		}
-		MPI_Isend(BP->send_west_buffer, BP->by_sz * BP->bz_sz, MPI_DOUBLE, BP->rank_w, 0, comm, &requests[0]);
-		MPI_Irecv(BP->recv_west_buffer, BP->by_sz * BP->bz_sz, MPI_DOUBLE, BP->rank_w, 1, comm, &requests[1]);
 	}
 	//east
 	if (BP->rank_e != MPI_PROC_NULL) {
@@ -104,8 +91,6 @@ void apply_stencil3d(stencil3d const* S, block_params const* BP, double const* u
 				BP->send_east_buffer[id] = u[S->index_c(BP->bx_sz-1, iy, iz)];
 			}
 		}
-		MPI_Isend(BP->send_east_buffer, BP->by_sz * BP->bz_sz, MPI_DOUBLE, BP->rank_e, 1, comm, &requests[2]);
-		MPI_Irecv(BP->recv_east_buffer, BP->by_sz * BP->bz_sz, MPI_DOUBLE, BP->rank_e, 0, comm, &requests[3]);
 	}
 	//south
 	if (BP->rank_s != MPI_PROC_NULL) {
@@ -115,8 +100,6 @@ void apply_stencil3d(stencil3d const* S, block_params const* BP, double const* u
 				BP->send_south_buffer[id] = u[S->index_c(ix, 0, iz)];
 			}
 		}
-		MPI_Isend(BP->send_south_buffer, BP->bx_sz * BP->bz_sz, MPI_DOUBLE, BP->rank_s, 0, comm, &requests[4]);
-		MPI_Irecv(BP->recv_south_buffer, BP->bx_sz * BP->bz_sz, MPI_DOUBLE, BP->rank_s, 1, comm, &requests[5]);
 	}
 	//north
 	if (BP->rank_n != MPI_PROC_NULL) {
@@ -126,8 +109,6 @@ void apply_stencil3d(stencil3d const* S, block_params const* BP, double const* u
 				BP->send_north_buffer[id] = u[S->index_c(ix, BP->by_sz-1, iz)];
 			}
 		}
-		MPI_Isend(BP->send_north_buffer, BP->bx_sz * BP->bz_sz, MPI_DOUBLE, BP->rank_n, 1, comm, &requests[6]);
-		MPI_Irecv(BP->recv_north_buffer, BP->bx_sz * BP->bz_sz, MPI_DOUBLE, BP->rank_n, 0, comm, &requests[7]);
 	}
 	//bot
 	if (BP->rank_b != MPI_PROC_NULL) {
@@ -137,8 +118,6 @@ void apply_stencil3d(stencil3d const* S, block_params const* BP, double const* u
 				BP->send_bot_buffer[id] = u[S->index_c(ix, iy, 0)];
 			}
 		}
-		MPI_Isend(BP->send_bot_buffer, BP->bx_sz * BP->by_sz, MPI_DOUBLE, BP->rank_b, 0, comm, &requests[8]);
-		MPI_Irecv(BP->recv_bot_buffer, BP->bx_sz * BP->by_sz, MPI_DOUBLE, BP->rank_b, 1, comm, &requests[9]);
 	}
 	//top
 	if (BP->rank_t != MPI_PROC_NULL) {
@@ -148,16 +127,84 @@ void apply_stencil3d(stencil3d const* S, block_params const* BP, double const* u
 				BP->send_top_buffer[id] = u[S->index_c(ix, iy, BP->bz_sz-1)];
 			}
 		}
-		MPI_Isend(BP->send_top_buffer, BP->bx_sz * BP->by_sz, MPI_DOUBLE, BP->rank_t, 1, comm, &requests[10]);
-		MPI_Irecv(BP->recv_top_buffer, BP->bx_sz * BP->by_sz, MPI_DOUBLE, BP->rank_t, 0, comm, &requests[11]);
 	}
-	
-	//Wait for recv buffers to be filled
-	int neighbours[] = {BP->rank_w, BP->rank_e, BP->rank_s, BP->rank_n, BP->rank_b, BP->rank_t};
-	for (int id=0; id<6; id++)
-		if (neighbours[id] != MPI_PROC_NULL)
-			MPI_Wait(&requests[2*id+1], MPI_STATUS_IGNORE);
-	
+	///////////////// COMMUNICATION START /////////////////////
+	#if defined(STENCIL_ONE_SIDED)
+		// Wait until neigbours' buffers are filled.
+		MPI_Win_fence(0, BP->win_e);
+		MPI_Win_fence(0, BP->win_w);
+		MPI_Win_fence(0, BP->win_n);
+		MPI_Win_fence(0, BP->win_s);
+		MPI_Win_fence(0, BP->win_t);
+		MPI_Win_fence(0, BP->win_b);
+		// Read from neighbours' buffers.
+		if (BP->rank_e != MPI_PROC_NULL) {
+			MPI_Get(BP->recv_east_buffer, sz_ew, MPI_DOUBLE, BP->rank_e, 0, sz_ew, MPI_DOUBLE, BP->win_e);
+		}
+		if (BP->rank_w != MPI_PROC_NULL) {
+			MPI_Get(BP->recv_west_buffer, sz_ew, MPI_DOUBLE, BP->rank_w, 0, sz_ew, MPI_DOUBLE, BP->win_w);
+		}
+		if (BP->rank_n != MPI_PROC_NULL) {
+			MPI_Get(BP->recv_north_buffer, sz_ns, MPI_DOUBLE, BP->rank_n, 0, sz_ns, MPI_DOUBLE, BP->win_n);
+		}
+		if (BP->rank_s != MPI_PROC_NULL) {
+			MPI_Get(BP->recv_south_buffer, sz_ns, MPI_DOUBLE, BP->rank_s, 0, sz_ns, MPI_DOUBLE, BP->win_s);
+		}
+		if (BP->rank_t != MPI_PROC_NULL) {
+			MPI_Get(BP->recv_top_buffer, sz_tb, MPI_DOUBLE, BP->rank_t, 0, sz_tb, MPI_DOUBLE, BP->win_t);
+		}
+		if (BP->rank_b != MPI_PROC_NULL) {
+			MPI_Get(BP->recv_bot_buffer, sz_tb, MPI_DOUBLE, BP->rank_b, 0, sz_tb, MPI_DOUBLE, BP->win_b);
+		}
+		// Wait until we are done reading neighbours' buffers.
+		MPI_Win_fence(0, BP->win_e);
+		MPI_Win_fence(0, BP->win_w);
+		MPI_Win_fence(0, BP->win_n);
+		MPI_Win_fence(0, BP->win_s);
+		MPI_Win_fence(0, BP->win_t);
+		MPI_Win_fence(0, BP->win_b);
+	#elif defined(STENCIL_GLOBAL_COMM) || defined(STENCIL_MPI_CART)
+		MPI_Request requests[12];
+		MPI_Status statuses[12];
+		//west
+		if (BP->rank_w != MPI_PROC_NULL) {
+			MPI_Isend(BP->send_west_buffer, sz_ew, MPI_DOUBLE, BP->rank_w, 0, BP->comm, &requests[0]);
+			MPI_Irecv(BP->recv_west_buffer, sz_ew, MPI_DOUBLE, BP->rank_w, 1, BP->comm, &requests[1]);
+		}
+		//east
+		if (BP->rank_e != MPI_PROC_NULL) {
+			MPI_Isend(BP->send_east_buffer, sz_ew, MPI_DOUBLE, BP->rank_e, 1, BP->comm, &requests[2]);
+			MPI_Irecv(BP->recv_east_buffer, sz_ew, MPI_DOUBLE, BP->rank_e, 0, BP->comm, &requests[3]);
+		}
+		//south
+		if (BP->rank_s != MPI_PROC_NULL) {
+			MPI_Isend(BP->send_south_buffer, sz_ns, MPI_DOUBLE, BP->rank_s, 0, BP->comm, &requests[4]);
+			MPI_Irecv(BP->recv_south_buffer, sz_ns, MPI_DOUBLE, BP->rank_s, 1, BP->comm, &requests[5]);
+		}
+		//north
+		if (BP->rank_n != MPI_PROC_NULL) {
+			MPI_Isend(BP->send_north_buffer, sz_ns, MPI_DOUBLE, BP->rank_n, 1, BP->comm, &requests[6]);
+			MPI_Irecv(BP->recv_north_buffer, sz_ns, MPI_DOUBLE, BP->rank_n, 0, BP->comm, &requests[7]);
+		}
+		//bot
+		if (BP->rank_b != MPI_PROC_NULL) {
+			MPI_Isend(BP->send_bot_buffer, sz_tb, MPI_DOUBLE, BP->rank_b, 0, BP->comm, &requests[8]);
+			MPI_Irecv(BP->recv_bot_buffer, sz_tb, MPI_DOUBLE, BP->rank_b, 1, BP->comm, &requests[9]);
+		}
+		//top
+		if (BP->rank_t != MPI_PROC_NULL) {
+			MPI_Isend(BP->send_top_buffer, sz_tb, MPI_DOUBLE, BP->rank_t, 1, BP->comm, &requests[10]);
+			MPI_Irecv(BP->recv_top_buffer, sz_tb, MPI_DOUBLE, BP->rank_t, 0, BP->comm, &requests[11]);
+		}
+		
+		//Wait for recv buffers to be filled
+		int neighbours[] = {BP->rank_w, BP->rank_e, BP->rank_s, BP->rank_n, BP->rank_b, BP->rank_t};
+		for (int id=0; id<6; id++)
+			if (neighbours[id] != MPI_PROC_NULL)
+				MPI_Wait(&requests[2*id+1], MPI_STATUS_IGNORE);
+	#else
+		#error "No stencil version specified"
+	#endif
 	//Use buffers for edge points, apply the stencil.
 	for (int iz=0; iz<BP->bz_sz; iz++) {
 		for (int iy=0; iy<BP->by_sz; iy++) {
@@ -180,7 +227,6 @@ void apply_stencil3d(stencil3d const* S, block_params const* BP, double const* u
 }
 
 block_params create_blocks(int const nx, int const ny, int const nz) {
-	//Timer timerblock("4. Block creation operation");
 	int rank, size;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -195,92 +241,15 @@ block_params create_blocks(int const nx, int const ny, int const nz) {
 		printf("ERROR: Invalid number of MPI processes (%d), can't create blocks. Try using %d instead.\n", size, BP.bkx*BP.bky*BP.bkz);
 		exit(1);
 	}
-	// Calculate the sizes (ignoring divisibility)
-	BP.bx_sz = (nx + BP.bkx - 1) / BP.bkx;
-	BP.by_sz = (ny + BP.bky - 1) / BP.bky;
-	BP.bz_sz = (nz + BP.bkz - 1) / BP.bkz;
-	// Calculate index in each direction
-	BP.bx_idx = rank % BP.bkx;
-	BP.by_idx = (rank / BP.bkx) % BP.bky;
-	BP.bz_idx = rank / (BP.bkx * BP.bky);
-	// Save start index (gridpoint) in x y and z directions
-	BP.bx_start = BP.bx_idx*BP.bx_sz;
-	BP.by_start = BP.by_idx*BP.by_sz;
-	BP.bz_start = BP.bz_idx*BP.bz_sz;
-	// Grid points are often not perfectly divisible into blocks, we handle that here.
-	// x-direction
-	int xb_start = BP.bx_idx * BP.bx_sz;
-	int xb_end = xb_start + BP.bx_sz - 1;
-	if (xb_end >= nx) {
-		BP.bx_sz = nx - xb_start;
-	}
-	// y-direction
-	int yb_start = BP.by_idx * BP.by_sz;
-	int yb_end = yb_start + BP.by_sz - 1;
-	if (yb_end >= ny) {
-		BP.by_sz = ny - yb_start;
-	}
-	// z-direction
-	int zb_start = BP.bz_idx * BP.bz_sz;
-	int zb_end = zb_start + BP.bz_sz - 1;
-	if (zb_end >= nz) {
-		BP.bz_sz = nz - zb_start;
-	}
-	// Save rank of neighbours
-	BP.rank_w = BP.bx_idx > 0          ? rank - 1               : MPI_PROC_NULL; //west
-	BP.rank_e = BP.bx_idx < BP.bkx - 1 ? rank + 1               : MPI_PROC_NULL; //east
-	BP.rank_s = BP.by_idx > 0          ? rank - BP.bkx          : MPI_PROC_NULL; //south
-	BP.rank_n = BP.by_idx < BP.bky - 1 ? rank + BP.bkx          : MPI_PROC_NULL; //north
-	BP.rank_b = BP.bz_idx > 0          ? rank - BP.bkx * BP.bky : MPI_PROC_NULL; //bot
-	BP.send_west_buffer = (double*) calloc(BP.by_sz*BP.bz_sz, sizeof(double));
-	BP.recv_west_buffer = (double*) calloc(BP.by_sz*BP.bz_sz, sizeof(double));
-	BP.send_east_buffer = (double*) calloc(BP.by_sz*BP.bz_sz, sizeof(double));
-	BP.recv_east_buffer = (double*) calloc(BP.by_sz*BP.bz_sz, sizeof(double));
-	
-	BP.send_south_buffer = (double*) calloc(BP.bx_sz*BP.bz_sz, sizeof(double));
-	BP.recv_south_buffer = (double*) calloc(BP.bx_sz*BP.bz_sz, sizeof(double));
-	BP.send_north_buffer = (double*) calloc(BP.bx_sz*BP.bz_sz, sizeof(double));
-	BP.recv_north_buffer = (double*) calloc(BP.bx_sz*BP.bz_sz, sizeof(double));
-	
-	BP.send_bot_buffer = (double*) calloc(BP.bx_sz*BP.by_sz, sizeof(double));
-	BP.recv_bot_buffer = (double*) calloc(BP.bx_sz*BP.by_sz, sizeof(double));
-	BP.send_top_buffer = (double*) calloc(BP.bx_sz*BP.by_sz, sizeof(double));
-	BP.recv_top_buffer = (double*) calloc(BP.bx_sz*BP.by_sz, sizeof(double));
-
-	BP.rank_t = BP.bz_idx < BP.bkz - 1 ? rank + BP.bkx * BP.bky : MPI_PROC_NULL; //top
-	return BP;
-}
-
-block_params create_blocks_cart(int const nx, int const ny, int const nz) {
-	//Timer timerblock("4. Block creation operation");
-	int rank, size;
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-	MPI_Comm_size(MPI_COMM_WORLD, &size);
-
-	block_params BP;
-	// Choose number of blocks in x y and z directions
-	BP.bkx = ceil(pow(size, 1.0/3.0));
-	BP.bky = ceil(sqrt(size/BP.bkx));
-	BP.bkz = ceil(size / (BP.bkx * BP.bky));
-
-	if (rank==0 && size!=BP.bkx*BP.bky*BP.bkz) {
-		printf("ERROR: Invalid number of MPI processes (%d), can't create blocks. Try using %d instead.\n", size, BP.bkx*BP.bky*BP.bkz);
-		exit(1);
-	}
-
-	int dim[3] = {BP.bkx, BP.bky, BP.bkz }; //Dimensions of the cartesian grid
-	int periodical[3] = {0, 0, 0}; //Whether eacht dimention is periodic or not (not in our case)
-	int reorder = 1; // Whether MPI is allowed to reorder processes to speed up computation
-	MPI_Comm cart_comm; //new communicator to store the cartesian communicator
-
-	MPI_Cart_create(MPI_COMM_WORLD, 3, dim, periodical, reorder, &cart_comm); //Create the cartesian topolgy and store it in a new MPI communicator
-	MPI_Comm_rank(cart_comm, &rank); //get the rank into the new communicator
-	int coord[3]; //The catesian index of the current process
-	MPI_Cart_coords(cart_comm, rank, 3, coord);
-	for (int p=0; p<size; p++){
-      if (rank==p)std::cout << "Processor " << p << " coordinates are ("<< coord[0] << ", "<< coord[1] <<", "<< coord[2] << ")"<<std::endl;
-      MPI_Barrier(MPI_COMM_WORLD);
-	}
+	#ifdef STENCIL_MPI_CART
+		int dim[3] = {BP.bkx, BP.bky, BP.bkz}; //Dimensions of the cartesian grid
+		int periodical[3] = {0, 0, 0}; //Whether eacht dimention is periodic or not (not in our case)
+		MPI_Comm cart_comm; //new communicator to store the cartesian communicator
+		MPI_Cart_create(MPI_COMM_WORLD, 3, dim, periodical, 0, &cart_comm); //Create the cartesian topolgy and store it in a new MPI communicator
+		BP.comm = cart_comm;
+	#else
+		BP.comm = MPI_COMM_WORLD;
+	#endif
 
 	// Calculate the sizes (ignoring divisibility)
 	BP.bx_sz = (nx + BP.bkx - 1) / BP.bkx;
@@ -314,13 +283,21 @@ block_params create_blocks_cart(int const nx, int const ny, int const nz) {
 		BP.bz_sz = nz - zb_start;
 	}
 	// Save rank of neighbours
-	MPI_Cart_shift(cart_comm, 0, -1, &rank, &BP.rank_w);
-	MPI_Cart_shift(cart_comm, 0, 1, &rank, &BP.rank_e);
-	MPI_Cart_shift(cart_comm, 1, -1, &rank, &BP.rank_s);
-	MPI_Cart_shift(cart_comm, 1, 1, &rank, &BP.rank_n);
-	MPI_Cart_shift(cart_comm, 2, -1, &rank, &BP.rank_b);
-	MPI_Cart_shift(cart_comm, 2, 1, &rank, &BP.rank_t);
-	BP.comm = cart_comm;
+	#ifdef STENCIL_MPI_CART
+		MPI_Cart_shift(cart_comm, 0, -1, &rank, &BP.rank_w);
+		MPI_Cart_shift(cart_comm, 0, 1, &rank, &BP.rank_e);
+		MPI_Cart_shift(cart_comm, 1, -1, &rank, &BP.rank_s);
+		MPI_Cart_shift(cart_comm, 1, 1, &rank, &BP.rank_n);
+		MPI_Cart_shift(cart_comm, 2, -1, &rank, &BP.rank_b);
+		MPI_Cart_shift(cart_comm, 2, 1, &rank, &BP.rank_t);
+	#else
+		BP.rank_w = BP.bx_idx > 0          ? rank - 1               : MPI_PROC_NULL; //west
+		BP.rank_e = BP.bx_idx < BP.bkx - 1 ? rank + 1               : MPI_PROC_NULL; //east
+		BP.rank_s = BP.by_idx > 0          ? rank - BP.bkx          : MPI_PROC_NULL; //south
+		BP.rank_n = BP.by_idx < BP.bky - 1 ? rank + BP.bkx          : MPI_PROC_NULL; //north
+		BP.rank_b = BP.bz_idx > 0          ? rank - BP.bkx * BP.bky : MPI_PROC_NULL; //bot
+		BP.rank_t = BP.bz_idx < BP.bkz - 1 ? rank + BP.bkx * BP.bky : MPI_PROC_NULL; //top
+	#endif
 
 	BP.send_west_buffer = (double*) calloc(BP.by_sz*BP.bz_sz, sizeof(double));
 	BP.recv_west_buffer = (double*) calloc(BP.by_sz*BP.bz_sz, sizeof(double));
@@ -336,6 +313,24 @@ block_params create_blocks_cart(int const nx, int const ny, int const nz) {
 	BP.recv_bot_buffer = (double*) calloc(BP.bx_sz*BP.by_sz, sizeof(double));
 	BP.send_top_buffer = (double*) calloc(BP.bx_sz*BP.by_sz, sizeof(double));
 	BP.recv_top_buffer = (double*) calloc(BP.bx_sz*BP.by_sz, sizeof(double));
+	#ifdef STENCIL_ONE_SIDED
+		int sz_ew = BP.by_sz*BP.bz_sz;
+		int sz_ns = BP.bx_sz*BP.bz_sz;
+		int sz_tb = BP.bx_sz*BP.by_sz;
+		MPI_Win win_e, win_w, win_s, win_n, win_t, win_b;
+		MPI_Win_create(BP.send_east_buffer, sz_ew * sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win_w);
+		MPI_Win_create(BP.send_west_buffer, sz_ew * sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win_e);
+		MPI_Win_create(BP.send_north_buffer, sz_ns * sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win_s);
+		MPI_Win_create(BP.send_south_buffer, sz_ns * sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win_n);
+		MPI_Win_create(BP.send_top_buffer, sz_tb * sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win_b);
+		MPI_Win_create(BP.send_bot_buffer, sz_tb * sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win_t);
+		BP.win_e = win_e;
+		BP.win_w = win_w;
+		BP.win_n = win_n;
+		BP.win_s = win_s;
+		BP.win_t = win_t;
+		BP.win_b = win_b;
+	#endif
 
 	return BP;
 }
