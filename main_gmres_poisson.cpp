@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
   else if (argc==2) {nx=atoi(argv[1]); ny=nx;            nz=nx;            order = 2;}
   else if (argc==3) {nx=atoi(argv[1]); ny=nx;            nz=nx;            order = atoi(argv[2]);}
   else if (argc==4) {nx=atoi(argv[1]); ny=atoi(argv[2]); nz=atoi(argv[3]); order = 2;         }
-  else if (argc==5) {nx=atoi(argv[1]); ny=atoi(argv[2]); nz=atoi(argv[3]); order = atoi(argv[2]);}
+  else if (argc==5) {nx=atoi(argv[1]); ny=atoi(argv[2]); nz=atoi(argv[3]); order = atoi(argv[4]);}
   else {std::cerr << "Invalid number of arguments (should be 0, 1, 2 or 3, or 4)"<<std::endl; exit(-1);}
   if (ny<0) ny=nx;
   if (nz<0) nz=nx;
