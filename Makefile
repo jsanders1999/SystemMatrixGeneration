@@ -40,7 +40,7 @@ MAIN_DIAGG_OBJ=main_gmres_poisson.cpp gmres_solver.o operations.cpp timer.o
 MAIN_POLYG_OBJ=main_gmres_poisson.cpp polygmres_solver.o operations.cpp timer.o
 
 MAIN_GMRES_CART_OBJ=main_gmres_poisson.cpp gmres_solver.o operations.cpp timer.o 
-MAIN_DIAGG_CART_OBJ=main_gmres_poisson.cpp gmres_solve.o operations.cpp timer.o
+MAIN_DIAGG_CART_OBJ=main_gmres_poisson.cpp gmres_solver.o operations.cpp timer.o
 MAIN_POLYG_CART_OBJ=main_gmres_poisson.cpp polygmres_solver.o operations.cpp timer.o
 
 MAIN_GMRES_WIN_OBJ=main_gmres_poisson.cpp gmres_solver.o operations.cpp timer.o 
@@ -74,13 +74,13 @@ main_diagg_poisson_cart.x: ${MAIN_DIAGG_CART_OBJ}
 	${CXX} ${CXX_FLAGS} -DSTENCIL_MPI_CART -DUSE_DIAG -o main_diagg_poisson.x $^
 
 
-main_gmres_poisson_win.x: ${MAIN_GMRES_WIN_OBJ} -DSTENCIL_ONE_SIDED
+main_gmres_poisson_win.x: ${MAIN_GMRES_WIN_OBJ} 
 	${CXX} ${CXX_FLAGS} -DSTENCIL_ONE_SIDED -o main_gmres_poisson.x $^
 
-main_polyg_poisson_win.x: ${MAIN_POLYG_WIN_OBJ} -DSTENCIL_ONE_SIDED
+main_polyg_poisson_win.x: ${MAIN_POLYG_WIN_OBJ} 
 	${CXX} ${CXX_FLAGS} -DSTENCIL_ONE_SIDED -DUSE_POLY -o main_polyg_poisson.x $^
 
-main_diagg_poisson_win.x: ${MAIN_DIAGG_WIN_OBJ} -DSTENCIL_ONE_SIDED
+main_diagg_poisson_win.x: ${MAIN_DIAGG_WIN_OBJ}
 	${CXX} ${CXX_FLAGS} -DSTENCIL_ONE_SIDED -DUSE_DIAG -o main_diagg_poisson.x $^
 
 test: run_tests.x
