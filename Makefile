@@ -49,27 +49,27 @@ MAIN_POLYG_WIN_OBJ=main_gmres_poisson.cpp polygmres_solver_win.o operations.cpp 
 run_tests.x: run_tests.cpp ${TEST_SOURCES}
 	${CXX} ${CXX_FLAGS} -DSTENCIL_GLOBAL_COMM -DUSE_MPI -o run_tests.x $^
 
-main_cg_poisson.x: ${MAIN_CG_OBJ} -DSTENCIL_GLOBAL_COMM
+main_cg_poisson.x: ${MAIN_CG_OBJ}
 	${CXX} ${CXX_FLAGS} -DSTENCIL_GLOBAL_COMM -o main_cg_poisson.x $^
 
 
-main_gmres_poisson.x: ${MAIN_GMRES_OBJ} -DSTENCIL_GLOBAL_COMM
+main_gmres_poisson.x: ${MAIN_GMRES_OBJ} 
 	${CXX} ${CXX_FLAGS} -DSTENCIL_GLOBAL_COMM -o main_gmres_poisson.x $^
 
-main_polyg_poisson.x: ${MAIN_POLYG_OBJ} -DSTENCIL_GLOBAL_COMM
+main_polyg_poisson.x: ${MAIN_POLYG_OBJ} 
 	${CXX} ${CXX_FLAGS} -DSTENCIL_GLOBAL_COMM -DUSE_POLY -o main_polyg_poisson.x $^
 
-main_diagg_poisson.x: ${MAIN_DIAGG_OBJ} -DSTENCIL_GLOBAL_COMM
+main_diagg_poisson.x: ${MAIN_DIAGG_OBJ} 
 	${CXX} ${CXX_FLAGS} -DSTENCIL_GLOBAL_COMM -DUSE_DIAG -o main_diagg_poisson.x $^
 
 
-main_gmres_poisson_cart.x: ${MAIN_GMRES_CART_OBJ} -DSTENCIL_MPI_CART
+main_gmres_poisson_cart.x: ${MAIN_GMRES_CART_OBJ} 
 	${CXX} ${CXX_FLAGS} -DSTENCIL_MPI_CART -o main_gmres_poisson.x $^
 
-main_polyg_poisson_cart.x: ${MAIN_POLYG_CART_OBJ} -DSTENCIL_MPI_CART
+main_polyg_poisson_cart.x: ${MAIN_POLYG_CART_OBJ} 
 	${CXX} ${CXX_FLAGS} -DSTENCIL_MPI_CART -DUSE_POLY -o main_polyg_poisson.x $^
 
-main_diagg_poisson_cart.x: ${MAIN_DIAGG_CART_OBJ} -DSTENCIL_MPI_CART
+main_diagg_poisson_cart.x: ${MAIN_DIAGG_CART_OBJ}
 	${CXX} ${CXX_FLAGS} -DSTENCIL_MPI_CART -DUSE_DIAG -o main_diagg_poisson.x $^
 
 
