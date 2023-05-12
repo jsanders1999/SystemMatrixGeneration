@@ -76,10 +76,12 @@ int main(int argc, char* argv[])
 
   int nx, ny, nz;
 
-  if      (argc==1) {nx=64;            ny=64;            nz=64;}
-  else if (argc==2) {nx=atoi(argv[1]); ny=nx;            nz=nx;}
-  else if (argc==4) {nx=atoi(argv[1]); ny=atoi(argv[2]); nz=atoi(argv[3]);}
-  else {std::cerr << "Invalid number of arguments (should be 0, 1 or 3)"<<std::endl; exit(-1);}
+  if      (argc==1) {nx=64;            ny=64;            nz=64;            order = 2;}
+  else if (argc==2) {nx=atoi(argv[1]); ny=nx;            nz=nx;            order = 2;}
+  else if (argc==3) {nx=atoi(argv[1]); ny=nx;            nz=nx;            order = atoi(argv[1]);}
+  else if (argc==4) {nx=atoi(argv[1]); ny=atoi(argv[2]); nz=atoi(argv[3]); order = 2         }
+  else if (argc==5) {nx=atoi(argv[1]); ny=atoi(argv[2]); nz=atoi(argv[3]); order = atoi(argv[1]);}
+  else {std::cerr << "Invalid number of arguments (should be 0, 1, 2 or 3, or 4)"<<std::endl; exit(-1);}
   if (ny<0) ny=nx;
   if (nz<0) nz=nx;
 
@@ -149,7 +151,7 @@ int main(int argc, char* argv[])
   try {
   //Timer t("gmres solver");
   #ifdef USE_POLY
-     polygmres_solver(&L, &BP, loc_n, x, b, tol, maxIter, &resNorm, &numIter, 2, 1);
+     polygmres_solver(&L, &BP, loc_n, x, b, tol, maxIter, &resNorm, &numIter, order, 1);
   #else
      gmres_solver(&L, &BP, loc_n, x, b, tol, maxIter, &resNorm, &numIter, 1);
   #endif
