@@ -150,6 +150,7 @@ int main(int argc, char* argv[])
   try {
   //Timer t("gmres solver");
   #ifdef USE_POLY
+     std::cout << "USE_POLY case" <<std::endl;
      polygmres_solver(&L, &BP, loc_n, x, b, tol, maxIter, &resNorm, &numIter, order, 1);
   #else
      gmres_solver(&L, &BP, loc_n, x, b, tol, maxIter, &resNorm, &numIter, 1);
