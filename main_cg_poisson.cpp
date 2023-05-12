@@ -47,7 +47,7 @@ stencil3d laplace3d_stencil(int nx, int ny, int nz, double dx, double dy, double
 }
 
 int main(int argc, char* argv[]){
-	// initialize MPI. This always has to be called first
+	// initialize MPI. This always has to be called first.
 	// to set up the internal data structures of the library.
 	int rank, size;
 	MPI_Init(&argc, &argv);
