@@ -46,7 +46,7 @@ MAIN_GMRES_WIN_OBJ=main_gmres_poisson.cpp gmres_solver_cart.o operations.o timer
 MAIN_DIAGG_WIN_OBJ=main_gmres_poisson.cpp gmres_solver_win.o operations.o timer.o
 MAIN_POLYG_WIN_OBJ=main_gmres_poisson.cpp polygmres_solver_win.o operations.o timer.o
  
-run_tests.x: run_tests.cpp ${TEST_SOURCES} 
+run_tests.x: run_tests.cpp ${TEST_SOURCES} -DSTENCIL_GLOBAL_COMM 
 	${CXX} ${CXX_FLAGS} -DSTENCIL_GLOBAL_COMM -DUSE_MPI -o run_tests.x $^
 
 main_cg_poisson.x: ${MAIN_CG_OBJ} -DSTENCIL_GLOBAL_COMM
