@@ -284,12 +284,12 @@ block_params create_blocks(int const nx, int const ny, int const nz) {
 	}
 	// Save rank of neighbours
 	#ifdef STENCIL_MPI_CART
-		MPI_Cart_shift(cart_comm, 2, -1, &rank, &BP.rank_w);
-		MPI_Cart_shift(cart_comm, 2, 1, &rank, &BP.rank_e);
-		MPI_Cart_shift(cart_comm, 1, -1, &rank, &BP.rank_s);
-		MPI_Cart_shift(cart_comm, 1, 1, &rank, &BP.rank_n);
-		MPI_Cart_shift(cart_comm, 0, -1, &rank, &BP.rank_b);
-		MPI_Cart_shift(cart_comm, 0, 1, &rank, &BP.rank_t);
+		MPI_Cart_shift(BP.comm, 2, -1, &rank, &BP.rank_w);
+		MPI_Cart_shift(BP.comm, 2, 1, &rank, &BP.rank_e);
+		MPI_Cart_shift(BP.comm, 1, -1, &rank, &BP.rank_s);
+		MPI_Cart_shift(BP.comm, 1, 1, &rank, &BP.rank_n);
+		MPI_Cart_shift(BP.comm, 0, -1, &rank, &BP.rank_b);
+		MPI_Cart_shift(BP.comm, 0, 1, &rank, &BP.rank_t);
 	#else
 		BP.rank_w = BP.bx_idx > 0          ? rank - 1               : MPI_PROC_NULL; //west
 		BP.rank_e = BP.bx_idx < BP.bkx - 1 ? rank + 1               : MPI_PROC_NULL; //east
