@@ -11,7 +11,7 @@
 
 
 CXX=mpic++
-CXX_FLAGS=-OO -g -fopenmp -std=c++17 #-DSTENCIL_$(STENCIL_VERSION)
+CXX_FLAGS=-O0 -g -fopenmp -std=c++17 #-DSTENCIL_$(STENCIL_VERSION)
 #CXX_FLAGS=-O3 -march=native -g -fopenmp -std=c++17
 #DEFS=-DUSE_POLY
 
