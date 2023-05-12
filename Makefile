@@ -24,6 +24,7 @@ default: run_tests.x main_cg_poisson.x main_gmres_poisson.x main_polyg_poisson.x
 %.o: %.cpp
 	${CXX} -c ${CXX_FLAGS}  $<
 
+
 #define some dependencies on headers
 operations.o: operations.hpp timer.hpp
 gmres_solver.o: gmres_solver.hpp operations.hpp timer.hpp
@@ -36,7 +37,7 @@ MAIN_CG_OBJ=main_cg_poisson.o cg_solver.o operations.cpp timer.o
 
 MAIN_GMRES_OBJ=main_gmres_poisson.cpp gmres_solver.o operations.cpp timer.o 
 MAIN_DIAGG_OBJ=main_gmres_poisson.cpp gmres_solver.o operations.cpp timer.o
-MAIN_POLYG_OBJ=main_gmres_poisson.cpp polygmres_solver.o operations.o timer.o
+MAIN_POLYG_OBJ=main_gmres_poisson.cpp polygmres_solver.o operations.cpp timer.o
 
 MAIN_GMRES_CART_OBJ=main_gmres_poisson.cpp gmres_solver_cart.o operations.cpp timer.o 
 MAIN_DIAGG_CART_OBJ=main_gmres_poisson.cpp gmres_solver_cart.o operations.cpp timer.o
