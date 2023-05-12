@@ -242,7 +242,7 @@ block_params create_blocks(int const nx, int const ny, int const nz) {
 		exit(1);
 	}
 	#ifdef STENCIL_MPI_CART
-		int dim[3] = {BP.bkx, BP.bky, BP.bkz}; //Dimensions of the cartesian grid
+		int dim[3] = {BP.bkz, BP.bky, BP.bkx}; //Dimensions of the cartesian grid
 		int periodical[3] = {0, 0, 0}; //Whether eacht dimention is periodic or not (not in our case)
 		MPI_Comm cart_comm; //new communicator to store the cartesian communicator
 		MPI_Cart_create(MPI_COMM_WORLD, 3, dim, periodical, 0, &cart_comm); //Create the cartesian topolgy and store it in a new MPI communicator
