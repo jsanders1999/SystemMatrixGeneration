@@ -13,7 +13,7 @@
 CXX=mpic++
 CXX_FLAGS=-O2 -g -fopenmp -std=c++17 #-DSTENCIL_$(STENCIL_VERSION)
 #CXX_FLAGS=-O3 -march=native -g -fopenmp -std=c++17
-DEFS=-DUSE_POLY
+#DEFS=-DUSE_POLY
 
 #main_gmres_poisson.o: FLAGS+=-DUSE_POLY
 
@@ -49,7 +49,7 @@ run_tests.x: run_tests.cpp ${TEST_SOURCES} gtest_mpi.o operations.o gmres_solver
 	${CXX} ${CXX_FLAGS} -DSTENCIL_GLOBAL_COMM -DUSE_MPI -o run_tests.x $^
 
 main_cg_poisson.x: ${MAIN_CG_OBJ}
-	${CXX} ${CXX_FLAGS} -o main_cg_poisson.x $^
+	${CXX} ${CXX_FLAGS} -DSTENCIL_GLOBAL_COMM -o main_cg_poisson.x $^
 
 
 main_gmres_poisson.x: ${MAIN_GMRES_OBJ}
