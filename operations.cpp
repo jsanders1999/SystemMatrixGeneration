@@ -246,7 +246,7 @@ block_params create_blocks(int const nx, int const ny, int const nz) {
 		int periodical[3] = {0, 0, 0}; //Whether eacht dimention is periodic or not (not in our case)
 		MPI_Comm cart_comm; //new communicator to store the cartesian communicator
 		MPI_Cart_create(MPI_COMM_WORLD, 3, dim, periodical, 0, &cart_comm); //Create the cartesian topolgy and store it in a new MPI communicator
-		BP.comm = cart_comm;
+		BP.comm = MPI_COMM_WORLD;#cart_comm;
 	#else
 		BP.comm = MPI_COMM_WORLD;
 	#endif
