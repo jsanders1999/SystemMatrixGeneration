@@ -8,8 +8,6 @@
 
 #include <cmath>
 
-#define USE_MPI_CART
-
 // Main program that solves the 3D Poisson equation
 // on a unit cube. The grid size (nx,ny,nz) can be 
 // passed to the executable like this:
@@ -52,6 +50,7 @@ stencil3d laplace3d_stencil(int nx, int ny, int nz, double dx, double dy, double
 
   #ifdef USE_DIAG
   {
+    std::cout << "USE_DIAG case" <<std::endl;
     L.value_n = L.value_n / L.value_c;
     L.value_e = L.value_e / L.value_c;
     L.value_s = L.value_s / L.value_c;
@@ -75,11 +74,14 @@ int main(int argc, char* argv[])
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
   int nx, ny, nz;
+  int order=0; //The order of the polynomial preconditioner
 
-  if      (argc==1) {nx=64;            ny=64;            nz=64;}
-  else if (argc==2) {nx=atoi(argv[1]); ny=nx;            nz=nx;}
-  else if (argc==4) {nx=atoi(argv[1]); ny=atoi(argv[2]); nz=atoi(argv[3]);}
-  else {std::cerr << "Invalid number of arguments (should be 0, 1 or 3)"<<std::endl; exit(-1);}
+  if      (argc==1) {nx=64;            ny=64;            nz=64;            order = 2;}
+  else if (argc==2) {nx=atoi(argv[1]); ny=nx;            nz=nx;            order = 2;}
+  else if (argc==3) {nx=atoi(argv[1]); ny=nx;            nz=nx;            order = atoi(argv[2]);}
+  else if (argc==4) {nx=atoi(argv[1]); ny=atoi(argv[2]); nz=atoi(argv[3]); order = 2;         }
+  else if (argc==5) {nx=atoi(argv[1]); ny=atoi(argv[2]); nz=atoi(argv[3]); order = atoi(argv[4]);}
+  else {std::cerr << "Invalid number of arguments (should be 0, 1, 2 or 3, or 4)"<<std::endl; exit(-1);}
   if (ny<0) ny=nx;
   if (nz<0) nz=nx;
 
@@ -149,7 +151,8 @@ int main(int argc, char* argv[])
   try {
   //Timer t("gmres solver");
   #ifdef USE_POLY
-     polygmres_solver(&L, &BP, loc_n, x, b, tol, maxIter, &resNorm, &numIter, 2, 1);
+     std::cout << "USE_POLY case for order: " << order <<std::endl;
+     polygmres_solver(&L, &BP, loc_n, x, b, tol, maxIter, &resNorm, &numIter, order, 1);
   #else
      gmres_solver(&L, &BP, loc_n, x, b, tol, maxIter, &resNorm, &numIter, 1);
   #endif
