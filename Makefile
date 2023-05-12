@@ -31,7 +31,7 @@ polygmres_solver.o: gmres_solver.hpp operations.hpp timer.hpp
 cg_solver.o: cg_solver.hpp operations.hpp timer.hpp
 gtest_mpi.o: gtest_mpi.hpp
 
-TEST_SOURCES=test_operations.cpp test_gmres_solver.cpp timer.o gtest_mpi.o operations.o gmres_solver.o cg_solver.o
+TEST_SOURCES=test_operations.cpp test_gmres_solver.cpp timer.o gtest_mpi.o operations.cpp gmres_solver.o cg_solver.o
 MAIN_CG_OBJ=main_cg_poisson.o cg_solver.o operations.o timer.o 
 
 MAIN_GMRES_OBJ=main_gmres_poisson.cpp gmres_solver.o operations.o timer.o 
