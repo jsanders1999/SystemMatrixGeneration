@@ -65,23 +65,23 @@ main_diagg_poisson.x: ${MAIN_DIAGG_OBJ}
 
 
 main_gmres_poisson_cart.x: ${MAIN_GMRES_CART_OBJ} 
-	${CXX} ${CXX_FLAGS} -DSTENCIL_MPI_CART -o main_gmres_poisson.x $^
+	${CXX} ${CXX_FLAGS} -DSTENCIL_MPI_CART -o main_gmres_poisson_cart.x $^
 
 main_polyg_poisson_cart.x: ${MAIN_POLYG_CART_OBJ} 
-	${CXX} ${CXX_FLAGS} -DSTENCIL_MPI_CART -DUSE_POLY -o main_polyg_poisson.x $^
+	${CXX} ${CXX_FLAGS} -DSTENCIL_MPI_CART -DUSE_POLY -o main_polyg_poisson_cart.x $^
 
 main_diagg_poisson_cart.x: ${MAIN_DIAGG_CART_OBJ}
-	${CXX} ${CXX_FLAGS} -DSTENCIL_MPI_CART -DUSE_DIAG -o main_diagg_poisson.x $^
+	${CXX} ${CXX_FLAGS} -DSTENCIL_MPI_CART -DUSE_DIAG -o main_diagg_poisson_cart.x $^
 
 
 main_gmres_poisson_win.x: ${MAIN_GMRES_WIN_OBJ} 
-	${CXX} ${CXX_FLAGS} -DSTENCIL_ONE_SIDED -o main_gmres_poisson.x $^
+	${CXX} ${CXX_FLAGS} -DSTENCIL_ONE_SIDED -o main_gmres_poisson_one_sided.x $^
 
 main_polyg_poisson_win.x: ${MAIN_POLYG_WIN_OBJ} 
-	${CXX} ${CXX_FLAGS} -DSTENCIL_ONE_SIDED -DUSE_POLY -o main_polyg_poisson.x $^
+	${CXX} ${CXX_FLAGS} -DSTENCIL_ONE_SIDED -DUSE_POLY -o main_polyg_poisson_one_sided.x $^
 
 main_diagg_poisson_win.x: ${MAIN_DIAGG_WIN_OBJ}
-	${CXX} ${CXX_FLAGS} -DSTENCIL_ONE_SIDED -DUSE_DIAG -o main_diagg_poisson.x $^
+	${CXX} ${CXX_FLAGS} -DSTENCIL_ONE_SIDED -DUSE_DIAG -o main_diagg_poisson_one_sided.x $^
 
 test: run_tests.x
 	mpirun -np 1  ./run_tests.x
