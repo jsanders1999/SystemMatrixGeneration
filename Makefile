@@ -37,11 +37,13 @@ MAIN_GMRES_OBJ=main_gmres_poisson.cpp gmres_solver.o operations.o timer.o
 MAIN_DIAGG_OBJ=main_gmres_poisson.cpp gmres_solver.o operations.o timer.o
 MAIN_POLYG_OBJ=main_gmres_poisson.cpp polygmres_solver.o operations.o timer.o
 
-MAIN_GMRES_OBJ=main_gmres_poisson.cpp gmres_solver_cart.o operations.o timer.o 
-MAIN_DIAGG_OBJ=main_gmres_poisson.cpp gmres_solver_cart.o operations.o timer.o
-MAIN_POLYG_OBJ=main_gmres_poisson.cpp polygmres_solver_cart.o operations.o timer.o
-MAIN_DIAGG_OBJ=main_gmres_poisson.cpp gmres_solver_win.o operations.o timer.o
-MAIN_POLYG_OBJ=main_gmres_poisson.cpp polygmres_solver_win.o operations.o timer.o
+MAIN_GMRES_CART_OBJ=main_gmres_poisson.cpp gmres_solver_cart.o operations.o timer.o 
+MAIN_DIAGG_CART_OBJ=main_gmres_poisson.cpp gmres_solver_cart.o operations.o timer.o
+MAIN_POLYG_CART_OBJ=main_gmres_poisson.cpp polygmres_solver_cart.o operations.o timer.o
+
+MAIN_GMRES_WIN_OBJ=main_gmres_poisson.cpp gmres_solver_cart.o operations.o timer.o 
+MAIN_DIAGG_WIN_OBJ=main_gmres_poisson.cpp gmres_solver_win.o operations.o timer.o
+MAIN_POLYG_WIN_OBJ=main_gmres_poisson.cpp polygmres_solver_win.o operations.o timer.o
  
 run_tests.x: run_tests.cpp ${TEST_SOURCES} gtest_mpi.o operations.o gmres_solver.o cg_solver.o
 	${CXX} ${CXX_FLAGS} -DSTENCIL_GLOBAL_COMM -DUSE_MPI -o run_tests.x $^
