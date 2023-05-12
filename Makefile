@@ -18,7 +18,7 @@ CXX_FLAGS=-O2 -g -fopenmp -std=c++17 #-DSTENCIL_$(STENCIL_VERSION)
 #main_gmres_poisson.o: FLAGS+=-DUSE_POLY
 
 #default target (built when typing just "make")
-default: run_tests.x main_cg_poisson.x main_gmres_poisson.x main_polyg_poisson.x main_diagg_poisson.x main_gmres_poisson_cart.x main_polyg_poisson_cart.x main_diagg_poisson_cart.x main_gmres_poisson_win.x main_polyg_poisson_win.x main_diagg_poisson_win.x
+default: run_tests.x main_cg_poisson.x main_gmres_poisson_global.x main_polyg_poisson_global.x main_diagg_poisson_global.x main_gmres_poisson_cart.x main_polyg_poisson_cart.x main_diagg_poisson_cart.x main_gmres_poisson_win.x main_polyg_poisson_win.x main_diagg_poisson_win.x
 
 # general rule to compile a C++ source file into an object file
 %.o: %.cpp
@@ -54,14 +54,14 @@ main_cg_poisson.x: ${MAIN_CG_OBJ}
 	${CXX} ${CXX_FLAGS} -DSTENCIL_GLOBAL_COMM -o main_cg_poisson.x $^
 
 
-main_gmres_poisson.x: ${MAIN_GMRES_OBJ} 
-	${CXX} ${CXX_FLAGS} -DSTENCIL_GLOBAL_COMM -o main_gmres_poisson.x $^
+main_gmres_poisson_global.x: ${MAIN_GMRES_OBJ} 
+	${CXX} ${CXX_FLAGS} -DSTENCIL_GLOBAL_COMM -o main_gmres_poisson_global.x $^
 
-main_polyg_poisson.x: ${MAIN_POLYG_OBJ} 
-	${CXX} ${CXX_FLAGS} -DSTENCIL_GLOBAL_COMM -DUSE_POLY -o main_polyg_poisson.x $^
+main_polyg_poisson_global.x: ${MAIN_POLYG_OBJ} 
+	${CXX} ${CXX_FLAGS} -DSTENCIL_GLOBAL_COMM -DUSE_POLY -o main_polyg_poisson_global.x $^
 
-main_diagg_poisson.x: ${MAIN_DIAGG_OBJ} 
-	${CXX} ${CXX_FLAGS} -DSTENCIL_GLOBAL_COMM -DUSE_DIAG -o main_diagg_poisson.x $^
+main_diagg_poisson_global.x: ${MAIN_DIAGG_OBJ} 
+	${CXX} ${CXX_FLAGS} -DSTENCIL_GLOBAL_COMM -DUSE_DIAG -o main_diagg_poisson_global.x $^
 
 
 main_gmres_poisson_cart.x: ${MAIN_GMRES_CART_OBJ} 
@@ -75,13 +75,13 @@ main_diagg_poisson_cart.x: ${MAIN_DIAGG_CART_OBJ}
 
 
 main_gmres_poisson_win.x: ${MAIN_GMRES_WIN_OBJ} 
-	${CXX} ${CXX_FLAGS} -DSTENCIL_ONE_SIDED -o main_gmres_poisson_one_sided.x $^
+	${CXX} ${CXX_FLAGS} -DSTENCIL_ONE_SIDED -o main_gmres_poisson_win.x $^
 
 main_polyg_poisson_win.x: ${MAIN_POLYG_WIN_OBJ} 
-	${CXX} ${CXX_FLAGS} -DSTENCIL_ONE_SIDED -DUSE_POLY -o main_polyg_poisson_one_sided.x $^
+	${CXX} ${CXX_FLAGS} -DSTENCIL_ONE_SIDED -DUSE_POLY -o main_polyg_poisson_win.x $^
 
 main_diagg_poisson_win.x: ${MAIN_DIAGG_WIN_OBJ}
-	${CXX} ${CXX_FLAGS} -DSTENCIL_ONE_SIDED -DUSE_DIAG -o main_diagg_poisson_one_sided.x $^
+	${CXX} ${CXX_FLAGS} -DSTENCIL_ONE_SIDED -DUSE_DIAG -o main_diagg_poisson_win.x $^
 
 test: run_tests.x
 	mpirun -np 1  ./run_tests.x
