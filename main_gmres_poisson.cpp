@@ -75,6 +75,7 @@ int main(int argc, char* argv[])
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
   int nx, ny, nz;
+  int order; //The order of the polynomial preconditioner
 
   if      (argc==1) {nx=64;            ny=64;            nz=64;            order = 2;}
   else if (argc==2) {nx=atoi(argv[1]); ny=nx;            nz=nx;            order = 2;}
