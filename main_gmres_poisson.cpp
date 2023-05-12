@@ -50,7 +50,7 @@ stencil3d laplace3d_stencil(int nx, int ny, int nz, double dx, double dy, double
 
   #ifdef USE_DIAG
   {
-    std::cout << "USE_POLY case for order: " << order <<std::endl;
+    std::cout << "USE_DIAG case" <<std::endl;
     L.value_n = L.value_n / L.value_c;
     L.value_e = L.value_e / L.value_c;
     L.value_s = L.value_s / L.value_c;
