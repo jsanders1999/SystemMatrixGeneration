@@ -339,6 +339,7 @@ block_params create_blocks(int const nx, int const ny, int const nz) {
 // polynomial preconditioning
 void polynomial(stencil3d* op, block_params const* BP, double* x, double* t1, double* t2, int n, int order)
 {
+  std::cout<< "Order Number: " << order <<std::endl;
   // initialization
   apply_stencil3d(op, BP, x, t1);
   axpby(n, 1.0, x, -1.0, t1);  

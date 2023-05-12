@@ -8,8 +8,6 @@
 
 #include <cmath>
 
-#define USE_MPI_CART
-
 // Main program that solves the 3D Poisson equation
 // on a unit cube. The grid size (nx,ny,nz) can be 
 // passed to the executable like this:
