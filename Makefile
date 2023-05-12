@@ -31,7 +31,7 @@ polygmres_solver.o: gmres_solver.hpp operations.hpp timer.hpp
 cg_solver.o: cg_solver.hpp operations.hpp timer.hpp
 gtest_mpi.o: gtest_mpi.hpp
 
-TEST_SOURCES=test_operations.cpp test_gmres_solver.cpp timer.o
+TEST_SOURCES=test_operations.cpp test_gmres_solver.cpp timer.o gtest_mpi.o operations.o gmres_solver.o cg_solver.o
 MAIN_CG_OBJ=main_cg_poisson.o cg_solver.o operations.o timer.o 
 
 MAIN_GMRES_OBJ=main_gmres_poisson.cpp gmres_solver.o operations.o timer.o 
@@ -46,7 +46,7 @@ MAIN_GMRES_WIN_OBJ=main_gmres_poisson.cpp gmres_solver_cart.o operations.o timer
 MAIN_DIAGG_WIN_OBJ=main_gmres_poisson.cpp gmres_solver_win.o operations.o timer.o
 MAIN_POLYG_WIN_OBJ=main_gmres_poisson.cpp polygmres_solver_win.o operations.o timer.o
  
-run_tests.x: run_tests.cpp ${TEST_SOURCES} gtest_mpi.o -DSTENCIL_GLOBAL_COMM operations.o gmres_solver.o cg_solver.o
+run_tests.x: run_tests.cpp ${TEST_SOURCES} 
 	${CXX} ${CXX_FLAGS} -DSTENCIL_GLOBAL_COMM -DUSE_MPI -o run_tests.x $^
 
 main_cg_poisson.x: ${MAIN_CG_OBJ} -DSTENCIL_GLOBAL_COMM
