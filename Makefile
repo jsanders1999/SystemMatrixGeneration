@@ -11,7 +11,7 @@
 
 
 CXX=mpic++
-CXX_FLAGS=-O2 -g -fopenmp -std=c++17 #-DSTENCIL_$(STENCIL_VERSION)
+CXX_FLAGS=-O0 -g -fopenmp -std=c++17 #-DSTENCIL_$(STENCIL_VERSION)
 #CXX_FLAGS=-O3 -march=native -g -fopenmp -std=c++17
 #DEFS=-DUSE_POLY
 
@@ -23,6 +23,7 @@ default: run_tests.x main_cg_poisson.x main_gmres_poisson.x main_polyg_poisson.x
 # general rule to compile a C++ source file into an object file
 %.o: %.cpp
 	${CXX} -c ${CXX_FLAGS}  $<
+
 
 #define some dependencies on headers
 operations.o: operations.hpp timer.hpp
@@ -36,7 +37,7 @@ MAIN_CG_OBJ=main_cg_poisson.o cg_solver.o operations.cpp timer.o
 
 MAIN_GMRES_OBJ=main_gmres_poisson.cpp gmres_solver.o operations.cpp timer.o 
 MAIN_DIAGG_OBJ=main_gmres_poisson.cpp gmres_solver.o operations.cpp timer.o
-MAIN_POLYG_OBJ=main_gmres_poisson.cpp polygmres_solver.o operations.o timer.o
+MAIN_POLYG_OBJ=main_gmres_poisson.cpp polygmres_solver.o operations.cpp timer.o
 
 MAIN_GMRES_CART_OBJ=main_gmres_poisson.cpp gmres_solver_cart.o operations.cpp timer.o 
 MAIN_DIAGG_CART_OBJ=main_gmres_poisson.cpp gmres_solver_cart.o operations.cpp timer.o
@@ -49,27 +50,27 @@ MAIN_POLYG_WIN_OBJ=main_gmres_poisson.cpp polygmres_solver_win.o operations.cpp 
 run_tests.x: run_tests.cpp ${TEST_SOURCES}
 	${CXX} ${CXX_FLAGS} -DSTENCIL_GLOBAL_COMM -DUSE_MPI -o run_tests.x $^
 
-main_cg_poisson.x: ${MAIN_CG_OBJ} -DSTENCIL_GLOBAL_COMM
+main_cg_poisson.x: ${MAIN_CG_OBJ}
 	${CXX} ${CXX_FLAGS} -DSTENCIL_GLOBAL_COMM -o main_cg_poisson.x $^
 
 
-main_gmres_poisson.x: ${MAIN_GMRES_OBJ} -DSTENCIL_GLOBAL_COMM
+main_gmres_poisson.x: ${MAIN_GMRES_OBJ} 
 	${CXX} ${CXX_FLAGS} -DSTENCIL_GLOBAL_COMM -o main_gmres_poisson.x $^
 
-main_polyg_poisson.x: ${MAIN_POLYG_OBJ} -DSTENCIL_GLOBAL_COMM
+main_polyg_poisson.x: ${MAIN_POLYG_OBJ} 
 	${CXX} ${CXX_FLAGS} -DSTENCIL_GLOBAL_COMM -DUSE_POLY -o main_polyg_poisson.x $^
 
-main_diagg_poisson.x: ${MAIN_DIAGG_OBJ} -DSTENCIL_GLOBAL_COMM
+main_diagg_poisson.x: ${MAIN_DIAGG_OBJ} 
 	${CXX} ${CXX_FLAGS} -DSTENCIL_GLOBAL_COMM -DUSE_DIAG -o main_diagg_poisson.x $^
 
 
-main_gmres_poisson_cart.x: ${MAIN_GMRES_CART_OBJ} -DSTENCIL_MPI_CART
+main_gmres_poisson_cart.x: ${MAIN_GMRES_CART_OBJ} 
 	${CXX} ${CXX_FLAGS} -DSTENCIL_MPI_CART -o main_gmres_poisson.x $^
 
-main_polyg_poisson_cart.x: ${MAIN_POLYG_CART_OBJ} -DSTENCIL_MPI_CART
+main_polyg_poisson_cart.x: ${MAIN_POLYG_CART_OBJ} 
 	${CXX} ${CXX_FLAGS} -DSTENCIL_MPI_CART -DUSE_POLY -o main_polyg_poisson.x $^
 
-main_diagg_poisson_cart.x: ${MAIN_DIAGG_CART_OBJ} -DSTENCIL_MPI_CART
+main_diagg_poisson_cart.x: ${MAIN_DIAGG_CART_OBJ}
 	${CXX} ${CXX_FLAGS} -DSTENCIL_MPI_CART -DUSE_DIAG -o main_diagg_poisson.x $^
 
 
