@@ -4,7 +4,7 @@
 #include <cmath>
 #include <limits>
 
-#include <gsl/gsl_integration.h>
+#include <gsl>
 
 double f(double x, void* params) {
   double alpha = *(double*)params;
