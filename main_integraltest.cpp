@@ -1,15 +1,9 @@
-#include "operations.hpp"
-#include "gmres_solver.hpp"
 #include "timer.hpp"
 
 #include <iostream>
 #include <cmath>
 #include <limits>
 
-#include <cmath>
-
-#include <iostream>
-#include <cmath>
 #include <gsl/gsl_integration.h>
 
 double f(double x, void* params) {

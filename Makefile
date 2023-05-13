@@ -22,7 +22,7 @@ MAIN_INT_OBJ=main_integraltest.o
 
 
 main_integraltest.x: ${MAIN_CG_OBJ}
-	${CXX} ${CXX_FLAGS} -o main_integraltest.x $^
+	${CXX} ${CXX_FLAGS} main_integraltest.x $^
 
 
 
