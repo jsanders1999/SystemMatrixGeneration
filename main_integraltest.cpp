@@ -4,7 +4,7 @@
 #include <cmath>
 #include <limits>
 
-#include <gsl>
+#include <gsl/2.7>
 
 double f(double x, void* params) {
   double alpha = *(double*)params;
