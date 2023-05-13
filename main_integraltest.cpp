@@ -3,7 +3,7 @@
 #include <iostream>
 #include <cmath>
 
-#include <gsl>
+#include <gsl/gsl_integration.h>>
 
 double f(double x, void* params) {
   double alpha = *(double*)params;
