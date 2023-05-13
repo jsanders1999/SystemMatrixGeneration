@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <cmath>
-
 #include <gsl/gsl_integration.h>
 
 double f(double x, void* params) {

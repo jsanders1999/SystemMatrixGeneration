@@ -1,11 +1,11 @@
 # first:
 #module load 2022r2
-#module load openmpi
+#module load gsl
 
 
 
 CXX=g++#mpic++
-CXX_FLAGS=-O2 -g -fopenmp -std=c++17 
+CXX_FLAGS=-O2 -g -std=c++17 -lgsl # -fopenmp 
 
 #default target (built when typing just "make")
 default: main_integraltest.x
@@ -21,8 +21,8 @@ default: main_integraltest.x
 MAIN_INT_OBJ=main_integraltest.o
 
 
-main_integraltest.x: ${MAIN_CG_OBJ}
-	${CXX} ${CXX_FLAGS} main_integraltest.x $^
+main_integraltest.x: ${MAIN_INT_OBJ}
+	${CXX} ${CXX_FLAGS} -o main_integraltest.x $^
 
 
 
